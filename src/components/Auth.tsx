@@ -125,7 +125,7 @@ export const Auth: React.FC = () => {
         });
         client.requestAccessToken();
       } else {
-        // 2. Fallback: Google OAuth2 implicit grant popup/redirect
+        // 2. Fallback: Google OAuth2 implicit grant redirect
         const redirectUri = window.location.origin;
         const authUrl =
           `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -144,90 +144,131 @@ export const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e6eeff] via-[#f8f9ff] to-[#f0f4ff] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Decorative blobs */}
-      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-[#0040a1]/6 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#4648d4]/6 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-[#00514a]/4 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-
-      <div className="relative bg-white max-w-md w-full rounded-3xl px-10 py-12 shadow-2xl border border-[#c3c6d6]/20 flex flex-col items-center gap-8">
-        {/* Logo */}
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-16 h-16 rounded-2xl bg-[#0040a1] flex items-center justify-center text-white shadow-xl">
-            <span className="material-symbols-outlined text-[38px]">sign_language</span>
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#f8f9ff] text-[#121c2a] overflow-hidden">
+      {/* Left Panel: Hero / Testimonial / Purpose */}
+      <div className="w-full md:w-1/2 min-h-[450px] md:min-h-screen p-8 md:p-16 flex flex-col justify-between bg-gradient-to-br from-[#e9efff] via-[#f4f7ff] to-[#e6eeff] border-b md:border-b-0 md:border-r border-[#c3c6d6]/20 relative">
+        {/* Subtle grid pattern background */}
+        <div 
+          className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+          style={{ backgroundImage: 'radial-gradient(#0040a1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+        />
+        
+        {/* Top Logo */}
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-[#0040a1] flex items-center justify-center text-white font-bold shadow-md">
+            <span className="material-symbols-outlined text-[28px]">sign_language</span>
           </div>
-          <div className="text-center">
-            <div className="font-bold text-2xl text-[#0040a1] tracking-tight leading-none">
+          <div className="flex flex-col">
+            <span className="font-headline-md text-2xl font-extrabold text-[#0040a1] tracking-tight">
               SignMeet <span className="text-[#4648d4]">AI</span>
-            </div>
-            <div className="text-[11px] uppercase tracking-widest text-[#00514a] font-semibold mt-1">
+            </span>
+            <span className="text-[10px] uppercase font-bold text-[#00514a] tracking-widest -mt-1">
               Accessibility First
-            </div>
+            </span>
           </div>
         </div>
 
-        {/* Heading */}
-        <div className="text-center">
-          <h1 className="text-3xl font-extrabold text-[#121c2a] mb-2">Welcome</h1>
-          <p className="text-[#737686] text-sm leading-relaxed max-w-xs">
-            Real-time AI sign language interpretation for inclusive meetings.
+        {/* Center Quote / Purpose Statement */}
+        <div className="relative z-10 my-auto py-10 max-w-xl">
+          <h2 className="text-3xl md:text-4xl lg:text-[42px] font-extrabold text-[#121c2a] leading-[1.25] tracking-tight mb-8">
+            "SignMeet AI replaced manual interpreters, expensive captioners, and 3 translation tools for us."
+          </h2>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-[2px] bg-[#0040a1]" />
+            <p className="text-xs uppercase font-extrabold tracking-widest text-[#595c6b]">
+              — HEAD OF ACCESSIBILITY, GLOBAL TECH ENTERPRISE
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom Compliance & Badges */}
+        <div className="relative z-10 text-xs font-semibold text-[#737686] flex flex-wrap items-center gap-3 md:gap-6 pt-6 border-t border-[#c3c6d6]/30">
+          <span>WCAG 2.1 AAA</span>
+          <span>•</span>
+          <span>GDPR Compliant</span>
+          <span>•</span>
+          <span>Real-Time Interpretation</span>
+        </div>
+      </div>
+
+      {/* Right Panel: Sign In Form */}
+      <div className="w-full md:w-1/2 min-h-[550px] md:min-h-screen p-8 md:p-16 lg:p-24 flex flex-col justify-between bg-white relative">
+        {/* Top Back Link */}
+        <div className="flex justify-start">
+          <button 
+            onClick={() => window.location.href = '/'}
+            className="flex items-center gap-2 text-sm font-semibold text-[#595c6b] hover:text-[#0040a1] transition-colors group cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+            Back to home
+          </button>
+        </div>
+
+        {/* Form Container */}
+        <div className="w-full max-w-md mx-auto my-auto py-8 flex flex-col items-start text-left">
+          {/* Sign In Badge Label */}
+          <div className="mb-6">
+            <div className="w-10 h-0.5 bg-[#0040a1] mb-2" />
+            <span className="text-xs uppercase font-extrabold tracking-widest text-[#737686]">SIGN IN</span>
+          </div>
+
+          {/* Heading */}
+          <h1 className="text-3xl md:text-4xl font-extrabold text-[#121c2a] tracking-tight mb-3">
+            Welcome to SignMeet AI
+          </h1>
+          
+          <p className="text-[#595c6b] text-sm md:text-base leading-relaxed mb-8">
+            Continue with your Google Workspace to access your team's sign language interpretation dashboard and live meeting overlays.
+          </p>
+
+          {errorMessage && (
+            <div className="w-full bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-xs font-medium leading-relaxed mb-6">
+              {errorMessage}
+            </div>
+          )}
+
+          {/* Primary Google Sign In Button */}
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3.5 bg-[#0040a1] hover:bg-[#0056d2] text-white py-4 px-6 rounded-xl font-bold text-base shadow-lg shadow-[#0040a1]/25 hover:shadow-xl hover:shadow-[#0040a1]/35 transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer group mb-6"
+          >
+            {loading ? (
+              <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center p-1">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+              </div>
+            )}
+            <span>{loading ? 'Connecting to Google...' : 'Continue with Google'}</span>
+          </button>
+
+          {/* Active OAuth Badge */}
+          <div className="w-full bg-[#f4f7ff] border border-[#0040a1]/15 rounded-xl p-3 flex items-center gap-2.5 text-xs text-[#0040a1] mb-6">
+            <span className="material-symbols-outlined text-[18px]">verified</span>
+            <div className="truncate text-left">
+              <span className="font-bold">Google Client OAuth Enabled</span>
+              <div className="font-mono text-[10px] text-[#595c6b] truncate" title={GOOGLE_CLIENT_ID}>
+                ID: {GOOGLE_CLIENT_ID}
+              </div>
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          <p className="text-xs text-[#737686] leading-relaxed text-left">
+            By continuing, you agree to SignMeet AI's <a href="#" className="underline hover:text-[#0040a1]">Terms of Service</a> and <a href="#" className="underline hover:text-[#0040a1]">Privacy Policy</a>. New workspace? Your first sign-in creates it automatically.
           </p>
         </div>
 
-        {errorMessage && (
-          <div className="w-full bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-xs text-center font-medium leading-relaxed">
-            {errorMessage}
-          </div>
-        )}
-
-        {/* Google Client ID Status Badge */}
-        <div className="w-full bg-[#f0f4ff] border border-[#0040a1]/15 rounded-2xl p-3 flex items-center gap-2 text-xs text-[#0040a1]">
-          <span className="material-symbols-outlined text-[18px]">verified_user</span>
-          <div className="truncate">
-            <span className="font-bold">Google Client OAuth Enabled</span>
-            <div className="font-mono text-[10px] text-[#424654] truncate" title={GOOGLE_CLIENT_ID}>
-              ID: {GOOGLE_CLIENT_ID}
-            </div>
-          </div>
-        </div>
-
-        {/* Google Sign In Button */}
-        <button
-          onClick={handleGoogleSignIn}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-[#c3c6d6]/60 hover:border-[#0040a1] py-3.5 px-6 rounded-2xl font-semibold text-[#121c2a] text-base hover:shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 group cursor-pointer"
-        >
-          {loading ? (
-            <span className="w-5 h-5 border-2 border-[#c3c6d6] border-t-[#0040a1] rounded-full animate-spin" />
-          ) : (
-            /* Google SVG Logo */
-            <svg width="22" height="22" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-          )}
-          {loading ? 'Connecting to Google...' : 'Continue with Google'}
-        </button>
-
-        {/* Features badges */}
-        <div className="flex flex-wrap justify-center gap-2 w-full">
-          {['ASL / BSL Support', 'Live Captions', 'AI Transcripts', 'Cloud Storage'].map((f) => (
-            <span
-              key={f}
-              className="px-3 py-1 bg-[#eff4ff] text-[#0040a1] rounded-full text-xs font-semibold border border-[#0040a1]/10"
-            >
-              {f}
-            </span>
-          ))}
-        </div>
-
         {/* Footer */}
-        <p className="text-center text-[11px] text-[#737686] leading-relaxed">
-          By continuing, you agree to our Terms of Service and Privacy Policy.
-          <br />SignMeet AI is committed to full WCAG AAA accessibility compliance.
-        </p>
+        <div className="text-xs text-[#9aa0a6] text-left">
+          SignMeet AI · Real-time Sign Language Interpretation & Accessibility Platform
+        </div>
       </div>
     </div>
   );
