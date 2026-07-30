@@ -6,11 +6,7 @@ declare global {
   }
 }
 
-const DEFAULT_CLIENT_ID = '101318699736-omfhvo9m3otktncnsnboeom18v301gl5.apps.googleusercontent.com';
-const envClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_ID = (envClientId && envClientId.trim().length > 10 ? envClientId : DEFAULT_CLIENT_ID)
-  .trim()
-  .replace(/['"]/g, '');
+const GOOGLE_CLIENT_ID = '101318699736-omfhvo9m3otktncnsnboeom18v301gl5.apps.googleusercontent.com';
 
 export const Auth: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -69,18 +65,6 @@ export const Auth: React.FC = () => {
               }
             },
           });
-
-          const btnContainer = document.getElementById('gsi-official-button');
-          if (btnContainer && btnContainer.children.length === 0) {
-            window.google.accounts.id.renderButton(btnContainer, {
-              type: 'standard',
-              theme: 'outline',
-              size: 'large',
-              text: 'continue_with',
-              shape: 'rectangular',
-              width: 380,
-            });
-          }
         } catch (e) {
           console.warn('Google GSI initialization notice:', e);
         }
@@ -139,17 +123,19 @@ export const Auth: React.FC = () => {
     setErrorMessage(null);
 
     try {
+      const currentOrigin = window.location.origin.replace(/\/$/, '');
+
       if (window.google?.accounts?.oauth2) {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CLIENT_ID,
-          scope: 'openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+          scope: 'openid profile email',
           prompt: 'select_account',
           callback: async (response: any) => {
             if (response.error) {
               if (response.error === 'invalid_client') {
-                setErrorMessage('Google Cloud is propagating your Client ID changes (takes ~5-15 mins). Please wait a few minutes and try again.');
+                setErrorMessage('Google Cloud Client ID error. Ensure https://signmeet-ai.vercel.app is in Authorised JavaScript origins & Authorised redirect URIs in Google Cloud Console.');
               } else {
-                setErrorMessage(`Google Sign-In Notice: ${response.error_description || response.error}`);
+                setErrorMessage(`Google Sign-In Notice (${response.error}): ${response.error_description || response.error}`);
               }
               setLoading(false);
               return;
@@ -170,13 +156,12 @@ export const Auth: React.FC = () => {
         });
         client.requestAccessToken();
       } else {
-        const redirectUri = window.location.origin;
         const authUrl =
           `https://accounts.google.com/o/oauth2/v2/auth?` +
           `client_id=${encodeURIComponent(GOOGLE_CLIENT_ID)}` +
-          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          `&redirect_uri=${encodeURIComponent(currentOrigin)}` +
           `&response_type=token` +
-          `&scope=${encodeURIComponent('openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email')}` +
+          `&scope=${encodeURIComponent('openid profile email')}` +
           `&prompt=select_account`;
 
         window.location.href = authUrl;
