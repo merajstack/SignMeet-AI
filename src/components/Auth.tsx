@@ -6,10 +6,11 @@ declare global {
   }
 }
 
-const GOOGLE_CLIENT_ID = (
-  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-  '101318699736-omfhvo9m3otktncnsnboeom18v301gl5.apps.googleusercontent.com'
-).trim().replace(/['"]/g, '');
+const DEFAULT_CLIENT_ID = '101318699736-omfhvo9m3otktncnsnboeom18v301gl5.apps.googleusercontent.com';
+const envClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_ID = (envClientId && envClientId.trim().length > 10 ? envClientId : DEFAULT_CLIENT_ID)
+  .trim()
+  .replace(/['"]/g, '');
 
 export const Auth: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -51,6 +52,45 @@ export const Auth: React.FC = () => {
       return null;
     }
   };
+
+  // Render Google Identity Services (GIS) button and initialize SDK
+  useEffect(() => {
+    const initGsi = () => {
+      if (window.google?.accounts?.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: async (response: any) => {
+              if (response.credential) {
+                const userData = parseJwt(response.credential);
+                if (userData) {
+                  saveGoogleSession(userData, response.credential);
+                }
+              }
+            },
+          });
+
+          const btnContainer = document.getElementById('gsi-official-button');
+          if (btnContainer && btnContainer.children.length === 0) {
+            window.google.accounts.id.renderButton(btnContainer, {
+              type: 'standard',
+              theme: 'outline',
+              size: 'large',
+              text: 'continue_with',
+              shape: 'rectangular',
+              width: 380,
+            });
+          }
+        } catch (e) {
+          console.warn('Google GSI initialization notice:', e);
+        }
+      }
+    };
+
+    initGsi();
+    const interval = setInterval(initGsi, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Handle URL hash redirect parsing (e.g. if redirected back with OAuth tokens)
   useEffect(() => {
@@ -99,14 +139,13 @@ export const Auth: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      // 1. Direct Google Identity Services (GIS) Token Client popup
       if (window.google?.accounts?.oauth2) {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CLIENT_ID,
           scope: 'openid profile email',
           callback: async (response: any) => {
             if (response.error) {
-              setErrorMessage(`Google Sign-In notice: ${response.error_description || response.error}`);
+              setErrorMessage(`Google Sign-In Notice (${response.error}): ${response.error_description || 'Please wait 5-15 mins for Google Cloud propagation.'}`);
               setLoading(false);
               return;
             }
@@ -126,7 +165,6 @@ export const Auth: React.FC = () => {
         });
         client.requestAccessToken();
       } else {
-        // 2. Fallback: Google OAuth2 implicit grant redirect
         const redirectUri = window.location.origin;
         const authUrl =
           `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -228,7 +266,10 @@ export const Auth: React.FC = () => {
             </div>
           )}
 
-          {/* Primary Google Sign In Button */}
+          {/* Official Google GIS button container */}
+          <div id="gsi-official-button" className="w-full flex justify-center mb-4 min-h-[44px]" />
+
+          {/* Primary Custom Google Sign In Button */}
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
@@ -253,7 +294,7 @@ export const Auth: React.FC = () => {
           <div className="w-full bg-[#f4f7ff] border border-[#0040a1]/15 rounded-xl p-3 flex items-center gap-2.5 text-xs text-[#0040a1] mb-6">
             <span className="material-symbols-outlined text-[18px]">verified</span>
             <div className="truncate text-left">
-              <span className="font-bold">Google Client OAuth Enabled</span>
+              <span className="font-bold">Google Client OAuth Active</span>
               <div className="font-mono text-[10px] text-[#595c6b] truncate" title={GOOGLE_CLIENT_ID}>
                 ID: {GOOGLE_CLIENT_ID}
               </div>
