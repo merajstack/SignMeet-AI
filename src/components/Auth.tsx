@@ -6,9 +6,10 @@ declare global {
   }
 }
 
-const GOOGLE_CLIENT_ID =
+const GOOGLE_CLIENT_ID = (
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-  '101318699736-omfhvo9m3otktncnsnboeom18v301gl5.apps.googleusercontent.com';
+  '101318699736-omfhvo9m3otktncnsnboeom18v301gl5.apps.googleusercontent.com'
+).trim().replace(/['"]/g, '');
 
 export const Auth: React.FC = () => {
   const [loading, setLoading] = useState(false);
