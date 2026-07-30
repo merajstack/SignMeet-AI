@@ -25,38 +25,75 @@ export default function App() {
   const [meetings, setMeetings] = useState<MeetingSession[]>([]);
   const [activeMeetingUrl, setActiveMeetingUrl] = useState<string>('');
 
-  useEffect(() => {
+  const checkSession = () => {
+    const localGoogleSession = localStorage.getItem('signmeet_google_session');
+    if (localGoogleSession) {
+      try {
+        const parsed = JSON.parse(localGoogleSession);
+        if (parsed && parsed.user) {
+          setSession(parsed);
+          initUserProfile(parsed.user);
+          return;
+        }
+      } catch (e) {
+        localStorage.removeItem('signmeet_google_session');
+      }
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
       if (session) {
+        setSession(session);
         initUserProfile(session.user);
       }
     });
+  };
+
+  useEffect(() => {
+    checkSession();
+
+    const handleAuthChange = () => {
+      checkSession();
+    };
+
+    window.addEventListener('signmeet_auth_change', handleAuthChange);
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
       if (session) {
+        setSession(session);
         initUserProfile(session.user);
-      } else {
+      } else if (!localStorage.getItem('signmeet_google_session')) {
+        setSession(null);
         setUserProfile(null);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      window.removeEventListener('signmeet_auth_change', handleAuthChange);
+      subscription.unsubscribe();
+    };
   }, []);
+
+  const handleSignOut = async () => {
+    localStorage.removeItem('signmeet_google_session');
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {}
+    setSession(null);
+    setUserProfile(null);
+  };
 
   const initUserProfile = (user: any) => {
     setUserProfile({
       id: user.id,
       fullName: user.user_metadata?.full_name || 'User',
       displayName: user.user_metadata?.full_name?.split(' ')[0] || 'User',
-      email: user.email,
-      avatarUrl: '',
+      email: user.email || '',
+      avatarUrl: user.user_metadata?.avatar_url || '',
       role: 'user',
       subscriptionPlan: 'pro',
-      memberSince: new Date(user.created_at).getFullYear().toString(),
+      memberSince: new Date(user.created_at || Date.now()).getFullYear().toString(),
       dialect: 'ASL',
       captionFontSize: 20,
       highContrast: false,
@@ -174,6 +211,7 @@ export default function App() {
           userProfile={userProfile}
           onStartMeeting={handleStartMeeting}
           onOpenExtension={() => setShowExtensionOverlay(true)}
+          onSignOut={handleSignOut}
         />
       )}
 

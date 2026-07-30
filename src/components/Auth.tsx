@@ -1,5 +1,14 @@
-import React, { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import React, { useState, useEffect } from 'react';
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
+const GOOGLE_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+  '101318699736-omfhvo9m3otktncnsnboeom18v301gl5.apps.googleusercontent.com';
 
 export const Auth: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -9,16 +18,129 @@ export const Auth: React.FC = () => {
     return params.get('error_description') || hashParams.get('error_description') || null;
   });
 
+  const saveGoogleSession = (userData: any, token: string) => {
+    const session = {
+      user: {
+        id: userData.sub || `google-${Date.now()}`,
+        email: userData.email || '',
+        user_metadata: {
+          full_name: userData.name || userData.given_name || userData.email?.split('@')[0] || 'Google User',
+          avatar_url: userData.picture || '',
+        },
+        created_at: new Date().toISOString(),
+      },
+      access_token: token,
+    };
+    localStorage.setItem('signmeet_google_session', JSON.stringify(session));
+    window.dispatchEvent(new Event('signmeet_auth_change'));
+  };
+
+  const parseJwt = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  // Handle URL hash redirect parsing (e.g. if redirected back with OAuth tokens)
+  useEffect(() => {
+    const handleUrlHash = async () => {
+      const hash = window.location.hash;
+      if (!hash) return;
+
+      const params = new URLSearchParams(hash.replace('#', '?'));
+      const accessToken = params.get('access_token');
+      const idToken = params.get('id_token');
+
+      if (accessToken || idToken) {
+        setLoading(true);
+        try {
+          let userData: any = null;
+          if (accessToken) {
+            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            if (res.ok) {
+              userData = await res.json();
+            }
+          }
+
+          if (!userData && idToken) {
+            userData = parseJwt(idToken);
+          }
+
+          if (userData && (userData.sub || userData.email)) {
+            saveGoogleSession(userData, accessToken || idToken || '');
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        } catch (err: any) {
+          setErrorMessage('Failed to complete Google authentication from redirect.');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    handleUrlHash();
+  }, []);
+
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setErrorMessage(null);
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
-    setLoading(false);
+
+    try {
+      // 1. Direct Google Identity Services (GIS) Token Client popup
+      if (window.google?.accounts?.oauth2) {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'openid profile email',
+          callback: async (response: any) => {
+            if (response.error) {
+              setErrorMessage(`Google Sign-In notice: ${response.error_description || response.error}`);
+              setLoading(false);
+              return;
+            }
+            if (response.access_token) {
+              try {
+                const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                  headers: { Authorization: `Bearer ${response.access_token}` },
+                });
+                const userData = await res.json();
+                saveGoogleSession(userData, response.access_token);
+              } catch (err: any) {
+                setErrorMessage('Failed to fetch user profile from Google.');
+              }
+            }
+            setLoading(false);
+          },
+        });
+        client.requestAccessToken();
+      } else {
+        // 2. Fallback: Google OAuth2 implicit grant popup/redirect
+        const redirectUri = window.location.origin;
+        const authUrl =
+          `https://accounts.google.com/o/oauth2/v2/auth?` +
+          `client_id=${encodeURIComponent(GOOGLE_CLIENT_ID)}` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          `&response_type=token%20id_token` +
+          `&scope=${encodeURIComponent('openid profile email')}` +
+          `&nonce=${Math.random().toString(36).substring(2)}`;
+
+        window.location.href = authUrl;
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'An error occurred while signing in with Google.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,11 +180,22 @@ export const Auth: React.FC = () => {
           </div>
         )}
 
+        {/* Google Client ID Status Badge */}
+        <div className="w-full bg-[#f0f4ff] border border-[#0040a1]/15 rounded-2xl p-3 flex items-center gap-2 text-xs text-[#0040a1]">
+          <span className="material-symbols-outlined text-[18px]">verified_user</span>
+          <div className="truncate">
+            <span className="font-bold">Google Client OAuth Enabled</span>
+            <div className="font-mono text-[10px] text-[#424654] truncate" title={GOOGLE_CLIENT_ID}>
+              ID: {GOOGLE_CLIENT_ID}
+            </div>
+          </div>
+        </div>
+
         {/* Google Sign In Button */}
         <button
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-[#c3c6d6]/60 hover:border-[#0040a1] py-3.5 px-6 rounded-2xl font-semibold text-[#121c2a] text-base hover:shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 group"
+          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-[#c3c6d6]/60 hover:border-[#0040a1] py-3.5 px-6 rounded-2xl font-semibold text-[#121c2a] text-base hover:shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 group cursor-pointer"
         >
           {loading ? (
             <span className="w-5 h-5 border-2 border-[#c3c6d6] border-t-[#0040a1] rounded-full animate-spin" />
@@ -75,7 +208,7 @@ export const Auth: React.FC = () => {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
           )}
-          {loading ? 'Redirecting to Google...' : 'Continue with Google'}
+          {loading ? 'Connecting to Google...' : 'Continue with Google'}
         </button>
 
         {/* Features badges */}

@@ -7,6 +7,7 @@ interface NavigationProps {
   userProfile: UserProfile;
   onStartMeeting: (meetingUrl?: string) => void;
   onOpenExtension: () => void;
+  onSignOut?: () => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
@@ -15,6 +16,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   userProfile,
   onStartMeeting,
   onOpenExtension,
+  onSignOut,
 }) => {
   return (
     <header className="fixed top-0 w-full z-50 bg-[#f8f9ff]/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-[#c3c6d6]/20">
@@ -82,7 +84,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         </nav>
 
         {/* Action Buttons & Profile */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <button
             onClick={onOpenExtension}
             className="hidden lg:flex items-center gap-2 bg-[#eff4ff] text-[#0040a1] px-4 py-2 rounded-full font-label-sm text-sm hover:bg-[#dee9fc] transition-colors border border-[#c3c6d6]/40"
@@ -103,15 +105,25 @@ export const Navigation: React.FC<NavigationProps> = ({
 
           <button
             onClick={() => setActiveTab('settings')}
-            className="w-10 h-10 rounded-full bg-[#0040a1] text-white flex items-center justify-center font-bold shadow-md hover:ring-2 hover:ring-[#4648d4] transition-all"
+            className="w-10 h-10 rounded-full bg-[#0040a1] text-white flex items-center justify-center font-bold shadow-md hover:ring-2 hover:ring-[#4648d4] transition-all overflow-hidden"
             title={userProfile.fullName}
           >
             {userProfile.avatarUrl ? (
-              <img src={userProfile.avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+              <img src={userProfile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
               <span className="material-symbols-outlined text-[22px]">person</span>
             )}
           </button>
+
+          {onSignOut && (
+            <button
+              onClick={onSignOut}
+              className="p-2 rounded-full text-[#737686] hover:text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center"
+              title="Sign Out"
+            >
+              <span className="material-symbols-outlined text-[22px]">logout</span>
+            </button>
+          )}
         </div>
       </div>
     </header>
