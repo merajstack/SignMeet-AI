@@ -4,6 +4,7 @@ import { Participant, TranscriptEntry, UserProfile, TranslationMode, LandmarkPoi
 import { speechService } from '../services/speechService';
 import { drawHandSkeletonCanvas, initializeMediaPipeTracker, HandTrackingResult } from '../services/handTracking';
 import { AnimatedSignVisuals } from './AnimatedSignVisuals';
+import { GeminiSignCopilot, CopilotState, CopilotResult } from '../services/geminiCopilot';
 
 interface MeetingRoomProps {
   userProfile: UserProfile;
@@ -20,15 +21,21 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   const [cameraActive, setCameraActive] = useState(true);
   const [translationMode, setTranslationMode] = useState<TranslationMode>('sign');
   const [rightPanelTab, setRightPanelTab] = useState<'transcript' | 'sign-gifs'>('transcript');
-  
+
   // Hand Tracking States (Only true when user hand is in frame)
   const [isHandDetected, setIsHandDetected] = useState(false);
   const [detectedLandmarks, setDetectedLandmarks] = useState<LandmarkPoint[] | null>(null);
   const [detectedGesture, setDetectedGesture] = useState<string>('');
-  
+
   const [activeSpeaker, setActiveSpeaker] = useState<string>('Sarah Jenkins (You)');
   const [liveSubtitle, setLiveSubtitle] = useState<string>('Hello everyone, live sign language tracking and speech captions are active.');
   const [isCaptionsStreaming, setIsCaptionsStreaming] = useState(true);
+
+  // AI Sign Language Copilot States
+  const [copilotState, setCopilotState] = useState<CopilotState>('idle');
+  const [copilotKeywords, setCopilotKeywords] = useState<string[]>([]);
+  const [lastReconstructedEntry, setLastReconstructedEntry] = useState<string | null>(null);
+  const copilotRef = useRef<GeminiSignCopilot | null>(null);
   
   // Track last logged gesture to auto-append camera sign translations to live transcript
   const lastLoggedGestureRef = useRef<string>('');
@@ -59,6 +66,57 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const transcriptEndRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<any>(null);
+
+  // ─── Initialise Gemini Copilot ───────────────────────────────────────────────
+  useEffect(() => {
+    const copilot = new GeminiSignCopilot(
+      {
+        onBuffering: (keywords) => {
+          setCopilotState('buffering');
+          setCopilotKeywords(keywords);
+          setLiveSubtitle(`Signing... ${keywords.join(' · ')}`);
+        },
+        onProcessing: () => {
+          setCopilotState('processing');
+          setLiveSubtitle('✦ AI Copilot reconstructing...');
+        },
+        onResult: (result: CopilotResult) => {
+          setCopilotState('ready');
+          setCopilotKeywords([]);
+          setLiveSubtitle(result.reconstructedText);
+          setLastReconstructedEntry(result.reconstructedText);
+
+          const newEntry: TranscriptEntry = {
+            id: `t-${Date.now()}`,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            sender: 'Sarah Jenkins (You)',
+            type: 'sign-to-text',
+            originalText: result.reconstructedText,
+            confidence: result.confidence,
+            aiReconstructed: result.aiReconstructed,
+            rawKeywords: result.rawKeywords,
+          };
+          setTranscripts(prev => [...prev, newEntry]);
+
+          if (userProfile.autoSpeak) {
+            speechService.speak(result.reconstructedText);
+          }
+
+          // Reset state after 4s so the badge fades
+          setTimeout(() => setCopilotState('idle'), 4000);
+        },
+        onError: (msg) => {
+          console.warn('[Copilot]', msg);
+          setCopilotState('idle');
+        },
+      },
+      1500 // 1.5s silence window
+    );
+
+    copilotRef.current = copilot;
+    return () => copilot.reset();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProfile.autoSpeak]);
 
   // Timer
   useEffect(() => {
@@ -197,33 +255,16 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     };
   }, [cameraActive]);
 
-  // Update Live Subtitles & append to Live Transcript log instantly when a sign gesture is recognized in real time
+  // Feed detected gesture into Gemini Copilot keyword buffer
   useEffect(() => {
     if (detectedGesture && detectedGesture !== 'UNKNOWN' && detectedGesture !== 'Signing') {
-      const formattedText = `[Translated Sign]: ${detectedGesture}`;
-      setLiveSubtitle(formattedText);
-
-      const now = Date.now();
-      // Log to live transcripts if it's a new gesture or held for 2.5s
-      if (detectedGesture !== lastLoggedGestureRef.current || now - lastLogTimeRef.current > 2500) {
-        lastLoggedGestureRef.current = detectedGesture;
-        lastLogTimeRef.current = now;
-
-        const newEntry: TranscriptEntry = {
-          id: `t-${now}`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          sender: 'Sarah Jenkins (You)',
-          type: 'sign-to-text',
-          originalText: formattedText,
-          confidence: 0.98,
-        };
-
-        setTranscripts(prev => [...prev, newEntry]);
-
-        if (userProfile.autoSpeak) {
-          speechService.speak(detectedGesture);
-        }
-      }
+      // Update dialect from user profile before pushing
+      copilotRef.current?.setDialect(userProfile.dialect || 'ASL');
+      // Provide recent transcript context to Gemini
+      copilotRef.current?.setContext(
+        transcripts.slice(-4).map(t => `${t.sender}: ${t.originalText}`)
+      );
+      copilotRef.current?.pushKeyword(detectedGesture);
     } else if (!detectedGesture) {
       lastLoggedGestureRef.current = '';
     }
@@ -436,35 +477,107 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           </div>
 
           {/* LIVE CAPTIONS DISPLAY BAR (Bottom Center Stage Overlay) */}
-          <div className="absolute bottom-6 left-6 right-6 bg-[#121c2a]/95 backdrop-blur-xl border border-[#89f5e7]/30 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4">
+          <div className={`absolute bottom-6 left-6 right-6 backdrop-blur-xl p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 transition-all duration-500 ${
+            copilotState === 'ready'
+              ? 'bg-[#0a2a1e]/95 border border-[#00ff66]/40 shadow-[0_0_30px_rgba(0,255,102,0.15)]'
+              : copilotState === 'processing'
+              ? 'bg-[#0d1f38]/95 border border-[#89f5e7]/50 shadow-[0_0_20px_rgba(137,245,231,0.1)]'
+              : copilotState === 'buffering'
+              ? 'bg-[#121c2a]/95 border border-amber-400/40'
+              : 'bg-[#121c2a]/95 border border-[#89f5e7]/30'
+          }`}>
             <div className="flex items-start gap-3.5 min-w-0">
-              <div className="w-10 h-10 rounded-2xl bg-[#0040a1] text-white font-bold flex items-center justify-center shrink-0 shadow-md">
-                <span className="material-symbols-outlined text-[22px] text-[#89f5e7]">subtitles</span>
+              {/* Icon: changes based on copilot state */}
+              <div className={`w-10 h-10 rounded-2xl text-white font-bold flex items-center justify-center shrink-0 shadow-md transition-all duration-300 ${
+                copilotState === 'ready' ? 'bg-emerald-600' :
+                copilotState === 'processing' ? 'bg-[#0040a1] animate-pulse' :
+                copilotState === 'buffering' ? 'bg-amber-600' :
+                'bg-[#0040a1]'
+              }`}>
+                <span className="material-symbols-outlined text-[22px] text-white">
+                  {copilotState === 'ready' ? 'auto_awesome' :
+                   copilotState === 'processing' ? 'psychology' :
+                   copilotState === 'buffering' ? 'sign_language' :
+                   'subtitles'}
+                </span>
               </div>
+
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-bold text-[#89f5e7] uppercase tracking-wider font-mono">
-                    LIVE CAPTIONS STREAM ({activeSpeaker})
-                  </span>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  {copilotState === 'ready' ? (
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider font-mono flex items-center gap-1">
+                      ✦ AI COPILOT RECONSTRUCTED
+                    </span>
+                  ) : copilotState === 'processing' ? (
+                    <span className="text-[10px] font-bold text-[#89f5e7] uppercase tracking-wider font-mono animate-pulse">
+                      ✦ GEMINI RECONSTRUCTING...
+                    </span>
+                  ) : copilotState === 'buffering' ? (
+                    <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider font-mono">
+                      SIGNING — BUFFERING KEYWORDS
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-[#89f5e7] uppercase tracking-wider font-mono">
+                      LIVE CAPTIONS STREAM ({activeSpeaker})
+                    </span>
+                  )}
                   <div className="flex gap-1 items-center">
-                    <span className="w-1.5 h-1.5 bg-[#00ff66] rounded-full animate-bounce"></span>
-                    <span className="w-1.5 h-1.5 bg-[#00ff66] rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></span>
-                    <span className="w-1.5 h-1.5 bg-[#00ff66] rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></span>
+                    <span className={`w-1.5 h-1.5 rounded-full animate-bounce ${
+                      copilotState === 'ready' ? 'bg-emerald-400' :
+                      copilotState === 'buffering' ? 'bg-amber-400' :
+                      'bg-[#00ff66]'
+                    }`}></span>
+                    <span className={`w-1.5 h-1.5 rounded-full animate-bounce ${
+                      copilotState === 'ready' ? 'bg-emerald-400' :
+                      copilotState === 'buffering' ? 'bg-amber-400' :
+                      'bg-[#00ff66]'
+                    }`} style={{ animationDelay: '0.15s' }}></span>
+                    <span className={`w-1.5 h-1.5 rounded-full animate-bounce ${
+                      copilotState === 'ready' ? 'bg-emerald-400' :
+                      copilotState === 'buffering' ? 'bg-amber-400' :
+                      'bg-[#00ff66]'
+                    }`} style={{ animationDelay: '0.3s' }}></span>
                   </div>
                 </div>
 
-                {/* Subtitle Font Customization via settings */}
-                <p 
-                  className="font-caption-bold text-white leading-snug tracking-tight truncate"
-                  style={{ fontSize: `${userProfile.captionFontSize || 20}px` }}
-                >
-                  "{liveSubtitle}"
-                </p>
+                {/* Subtitle: show keyword chips while buffering, else show reconstructed text */}
+                {copilotState === 'buffering' ? (
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {copilotKeywords.map((kw, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-0.5 rounded-lg bg-amber-500/20 border border-amber-400/40 text-amber-200 text-xs font-bold font-mono"
+                      >
+                        {kw}
+                      </span>
+                    ))}
+                    <span className="text-amber-400/60 text-xs animate-pulse self-center">...</span>
+                  </div>
+                ) : (
+                  <p
+                    className={`font-caption-bold leading-snug tracking-tight truncate transition-all duration-300 ${
+                      copilotState === 'ready' ? 'text-emerald-100' : 'text-white'
+                    }`}
+                    style={{ fontSize: `${userProfile.captionFontSize || 20}px` }}
+                  >
+                    "{liveSubtitle}"
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Speaking / Audio Synthesizer Controls */}
             <div className="flex items-center gap-2 shrink-0">
+              {copilotState === 'buffering' && (
+                <button
+                  onClick={() => copilotRef.current?.flush()}
+                  className="px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 border border-amber-400/40 text-amber-200 text-xs font-bold transition-colors flex items-center gap-1"
+                  title="Force reconstruct now"
+                >
+                  <span className="material-symbols-outlined text-[16px]">send</span>
+                  Reconstruct
+                </button>
+              )}
               <button
                 onClick={() => speechService.speak(liveSubtitle)}
                 className="w-10 h-10 rounded-xl bg-white/10 hover:bg-[#0040a1] text-white flex items-center justify-center transition-colors shadow-sm"
@@ -542,11 +655,22 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                 {transcripts.map((entry) => (
                   <div
                     key={entry.id}
-                    className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1.5 hover:bg-white/10 transition-colors"
+                    className={`p-3.5 rounded-2xl border space-y-1.5 transition-colors ${
+                      entry.aiReconstructed
+                        ? 'bg-emerald-950/40 border-emerald-500/30 hover:bg-emerald-900/30'
+                        : 'bg-white/5 border-white/10 hover:bg-white/10'
+                    }`}
                   >
-                    <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center justify-between text-xs flex-wrap gap-1">
                       <span className="font-bold text-white/90">{entry.sender}</span>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {/* AI Copilot badge for Gemini-reconstructed entries */}
+                        {entry.aiReconstructed && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[11px]">auto_awesome</span>
+                            AI Copilot
+                          </span>
+                        )}
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
                           entry.type === 'sign-to-text' ? 'bg-[#0040a1] text-[#89f5e7]' : 'bg-[#00514a] text-emerald-200'
                         }`}>
@@ -555,7 +679,25 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                         <span className="text-white/40">{entry.timestamp}</span>
                       </div>
                     </div>
-                    <p className="font-body-md text-sm text-white/90 leading-relaxed">
+
+                    {/* Show raw keyword chips for AI-reconstructed entries */}
+                    {entry.aiReconstructed && entry.rawKeywords && entry.rawKeywords.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {entry.rawKeywords.map((kw, i) => (
+                          <span
+                            key={i}
+                            className="px-1.5 py-0.5 rounded-md bg-white/10 text-white/50 text-[10px] font-mono border border-white/10"
+                          >
+                            {kw}
+                          </span>
+                        ))}
+                        <span className="text-white/30 text-[10px] self-center">→ reconstructed</span>
+                      </div>
+                    )}
+
+                    <p className={`font-body-md text-sm leading-relaxed ${
+                      entry.aiReconstructed ? 'text-emerald-100' : 'text-white/90'
+                    }`}>
                       {entry.originalText}
                     </p>
                     <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[10px] text-white/50">

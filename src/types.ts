@@ -42,6 +42,8 @@ export interface TranscriptEntry {
   sourceLanguage?: string;
   targetLanguage?: string;
   confidence: number;
+  aiReconstructed?: boolean;   // true when sentence was reconstructed by Gemini Copilot
+  rawKeywords?: string[];      // original buffered sign keywords before reconstruction
 }
 
 export interface MeetingSession {

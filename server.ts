@@ -339,6 +339,91 @@ Respond in valid JSON format:
   }
 });
 
+// AI Sign Language Copilot — Sentence Reconstruction Endpoint
+app.post("/api/copilot/reconstruct", async (req, res) => {
+  try {
+    const {
+      signKeywords = [],
+      context = [],
+      dialect = "ASL",
+    } = req.body as {
+      signKeywords: string[];
+      context: string[];
+      dialect: string;
+    };
+
+    if (!signKeywords || signKeywords.length === 0) {
+      return res.status(400).json({ error: "No sign keywords provided" });
+    }
+
+    const ai = getGeminiClient();
+
+    if (ai) {
+      try {
+        const contextBlock =
+          context.length > 0
+            ? `Recent conversation context:\n${context.map((c, i) => `${i + 1}. ${c}`).join("\n")}\n\n`
+            : "";
+
+        const prompt = `You are an AI Sign Language Copilot integrated into SignMeet AI, a real-time accessibility platform.
+Your job is to reconstruct natural, grammatically correct English sentences from fragmented sign language keywords detected by MediaPipe hand tracking.
+
+${contextBlock}The user just signed these keywords in sequence (${dialect}):
+"${signKeywords.join(" · ")}"
+
+Rules:
+- Output ONE fluent, natural English sentence that captures the signer's intent
+- Use the conversation context to infer meaning where keywords are ambiguous
+- Keep the tone professional (this is a meeting context)
+- Do NOT add extra information — only reconstruct what was signed
+- If the keywords are a greeting, make it a warm greeting
+- If keywords indicate a question, output it as a question
+
+Respond ONLY with valid JSON (no markdown, no explanation):
+{
+  "reconstructedText": "The natural English sentence here",
+  "confidence": 0.97
+}`;
+
+        const response = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: prompt,
+        });
+
+        const text = response.text || "";
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          return res.json({
+            success: true,
+            reconstructedText: parsed.reconstructedText || signKeywords.join(" "),
+            confidence: parsed.confidence || 0.95,
+            rawKeywords: signKeywords,
+          });
+        }
+      } catch (geminiError) {
+        console.warn("[Copilot] Gemini reconstruction fallback:", geminiError);
+      }
+    }
+
+    // Fallback: basic keyword join with capitalization
+    const fallbackText =
+      signKeywords.join(" ").charAt(0).toUpperCase() +
+      signKeywords.join(" ").slice(1) +
+      ".";
+
+    return res.json({
+      success: true,
+      reconstructedText: fallbackText,
+      confidence: 0.70,
+      rawKeywords: signKeywords,
+      fallback: true,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Reconstruction failed" });
+  }
+});
+
 // AI Smart Summary Endpoint
 app.post("/api/summary", async (req, res) => {
   try {
