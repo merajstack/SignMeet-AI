@@ -142,10 +142,15 @@ export const Auth: React.FC = () => {
       if (window.google?.accounts?.oauth2) {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CLIENT_ID,
-          scope: 'openid profile email',
+          scope: 'openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+          prompt: 'select_account',
           callback: async (response: any) => {
             if (response.error) {
-              setErrorMessage(`Google Sign-In Notice (${response.error}): ${response.error_description || 'Please wait 5-15 mins for Google Cloud propagation.'}`);
+              if (response.error === 'invalid_client') {
+                setErrorMessage('Google Cloud is propagating your Client ID changes (takes ~5-15 mins). Please wait a few minutes and try again.');
+              } else {
+                setErrorMessage(`Google Sign-In Notice: ${response.error_description || response.error}`);
+              }
               setLoading(false);
               return;
             }
@@ -170,9 +175,9 @@ export const Auth: React.FC = () => {
           `https://accounts.google.com/o/oauth2/v2/auth?` +
           `client_id=${encodeURIComponent(GOOGLE_CLIENT_ID)}` +
           `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-          `&response_type=token%20id_token` +
-          `&scope=${encodeURIComponent('openid profile email')}` +
-          `&nonce=${Math.random().toString(36).substring(2)}`;
+          `&response_type=token` +
+          `&scope=${encodeURIComponent('openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email')}` +
+          `&prompt=select_account`;
 
         window.location.href = authUrl;
       }
