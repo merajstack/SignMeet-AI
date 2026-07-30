@@ -26,7 +26,7 @@ export const ChromeExtensionOverlay: React.FC<ChromeExtensionOverlayProps> = ({
       {/* Top Header */}
       <div className="p-3 bg-[#0040a1] flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[20px] text-[#89f5e7]">sign_language</span>
+          <img src="/logo.jpg" alt="Logo" className="w-5 h-5 rounded object-cover" />
           <span className="font-headline-md text-sm font-bold text-white">SignMeet Chrome Extension</span>
         </div>
 

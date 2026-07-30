@@ -184,8 +184,8 @@ export const Auth: React.FC = () => {
         
         {/* Top Logo */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-[#0040a1] flex items-center justify-center text-white font-bold shadow-md">
-            <span className="material-symbols-outlined text-[28px]">sign_language</span>
+          <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center p-0.5 shadow-md border border-[#0040a1]/15 overflow-hidden">
+            <img src="/logo.jpg" alt="SignMeet AI Logo" className="w-full h-full object-cover rounded-lg" />
           </div>
           <div className="flex flex-col">
             <span className="font-headline-md text-2xl font-extrabold text-[#0040a1] tracking-tight">

@@ -26,8 +26,8 @@ export const Navigation: React.FC<NavigationProps> = ({
           className="flex items-center gap-3 cursor-pointer group"
           onClick={() => setActiveTab('home')}
         >
-          <div className="w-10 h-10 rounded-xl bg-[#0040a1] flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:scale-105 transition-transform">
-            <span className="material-symbols-outlined text-[26px]">sign_language</span>
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-0.5 shadow-md border border-[#0040a1]/15 group-hover:scale-105 transition-transform overflow-hidden">
+            <img src="/logo.jpg" alt="SignMeet AI Logo" className="w-full h-full object-cover rounded-lg" />
           </div>
           <div className="flex flex-col">
             <span className="font-headline-md text-xl font-bold text-[#0040a1] tracking-tight">
