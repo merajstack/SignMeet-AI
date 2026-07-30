@@ -1,0 +1,11 @@
+{
+  "name": "SignMeet AI",
+  "description": "AI-powered real-time sign language translation platform and meeting overlay for Google Meet, Zoom, and Teams.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
