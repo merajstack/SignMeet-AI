@@ -9,44 +9,150 @@ import { SettingsPage } from './components/SettingsPage';
 import { ChromeExtensionOverlay } from './components/ChromeExtensionOverlay';
 import { ASLDictionaryModal } from './components/ASLDictionaryModal';
 import { SmartSummaryModal } from './components/SmartSummaryModal';
+import { Auth } from './components/Auth';
+import { supabase } from './lib/supabaseClient';
 
 export default function App() {
+  const [session, setSession] = useState<any>(null);
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [showExtensionOverlay, setShowExtensionOverlay] = useState(false);
   const [showDictionaryModal, setShowDictionaryModal] = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryTranscriptText, setSummaryTranscriptText] = useState('');
 
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    id: 'u-123',
-    fullName: 'Sarah Jenkins',
-    displayName: 'Sarah',
-    email: 'sarah.jenkins@example.com',
-    avatarUrl: '',
-    role: 'user',
-    subscriptionPlan: 'pro',
-    memberSince: '2023',
-    dialect: 'ASL',
-    captionFontSize: 20,
-    highContrast: false,
-    speechRate: 1.0,
-    speechVoice: '',
-    autoSpeak: true,
-    cloudStorage: true,
-    aiTrainingConsent: false,
-  });
-
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [meetings, setMeetings] = useState<MeetingSession[]>([]);
+  const [activeMeetingUrl, setActiveMeetingUrl] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/meetings')
-      .then((res) => res.json())
-      .then((data) => setMeetings(data))
-      .catch((err) => console.warn('Failed to load meetings:', err));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        initUserProfile(session.user);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        initUserProfile(session.user);
+      } else {
+        setUserProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
+  const initUserProfile = (user: any) => {
+    setUserProfile({
+      id: user.id,
+      fullName: user.user_metadata?.full_name || 'User',
+      displayName: user.user_metadata?.full_name?.split(' ')[0] || 'User',
+      email: user.email,
+      avatarUrl: '',
+      role: 'user',
+      subscriptionPlan: 'pro',
+      memberSince: new Date(user.created_at).getFullYear().toString(),
+      dialect: 'ASL',
+      captionFontSize: 20,
+      highContrast: false,
+      speechRate: 1.0,
+      speechVoice: '',
+      autoSpeak: true,
+      cloudStorage: true,
+      aiTrainingConsent: false,
+    });
+  };
+
+  useEffect(() => {
+    if (!session) return;
+    
+    // Fetch meetings from Supabase
+    const fetchMeetings = async () => {
+      const { data, error } = await supabase
+        .from('meetings')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+        
+      if (data) {
+        setMeetings(data);
+      }
+    };
+    
+    fetchMeetings();
+  }, [session]);
+
+  // Parse URL query parameter or hash on load to handle meeting links automatically
+  useEffect(() => {
+    const handleUrlRoute = () => {
+      const params = new URLSearchParams(window.location.search);
+      const meetingParam = params.get('meeting') || params.get('join') || params.get('room') || params.get('url');
+      const pathname = window.location.pathname;
+
+      let targetMeeting = meetingParam || '';
+
+      if (!targetMeeting && (pathname.startsWith('/join/') || pathname.startsWith('/meet/'))) {
+        targetMeeting = pathname.split('/')[2];
+      }
+
+      if (!targetMeeting && window.location.hash.includes('meeting')) {
+        targetMeeting = window.location.hash.replace('#meeting', '').replace('=', '').replace('/', '') || 'meet-live';
+      }
+
+      if (targetMeeting) {
+        const fullUrl = targetMeeting.startsWith('http') ? targetMeeting : `https://signmeet.ai/join/${targetMeeting}`;
+        setActiveMeetingUrl(fullUrl);
+        setActiveTab('meetings');
+      }
+    };
+
+    handleUrlRoute();
+    window.addEventListener('popstate', handleUrlRoute);
+    window.addEventListener('hashchange', handleUrlRoute);
+
+    return () => {
+      window.removeEventListener('popstate', handleUrlRoute);
+      window.removeEventListener('hashchange', handleUrlRoute);
+    };
+  }, []);
+
+  const handleStartMeeting = (urlOrCode?: string) => {
+    if (urlOrCode && urlOrCode.trim()) {
+      const cleaned = urlOrCode.trim();
+      const fullUrl = cleaned.startsWith('http') ? cleaned : `https://signmeet.ai/join/${cleaned}`;
+      setActiveMeetingUrl(fullUrl);
+      try {
+        const newUrl = new URL(window.location.href);
+        const code = cleaned.replace('https://signmeet.ai/join/', '');
+        newUrl.searchParams.set('meeting', code);
+        window.history.pushState({}, '', newUrl.toString());
+      } catch (_) {}
+    } else {
+      const defaultCode = `meet-${Math.floor(100000 + Math.random() * 900000)}`;
+      setActiveMeetingUrl(`https://signmeet.ai/join/${defaultCode}`);
+    }
+    setActiveTab('meetings');
+  };
+
+  const handleEndMeeting = () => {
+    try {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('meeting');
+      newUrl.searchParams.delete('join');
+      newUrl.searchParams.delete('room');
+      newUrl.searchParams.delete('url');
+      window.history.pushState({}, '', newUrl.pathname);
+    } catch (_) {}
+    setActiveTab('dashboard');
+  };
+
   const handleUpdateProfile = (updated: Partial<UserProfile>) => {
-    setUserProfile((prev) => ({ ...prev, ...updated }));
+    setUserProfile((prev) => prev ? { ...prev, ...updated } : null);
   };
 
   const handleOpenSummary = (text: string) => {
@@ -54,15 +160,19 @@ export default function App() {
     setShowSummaryModal(true);
   };
 
+  if (!session || !userProfile) {
+    return <Auth />;
+  }
+
   return (
-    <div className={`min-h-screen w-full bg-[#f8f9ff] text-[#121c2a] ${userProfile.highContrast ? 'contrast-125' : ''}`}>
-      {/* Navigation Header (Hidden in Live Meeting for full screen focus) */}
+    <div className={`min-h-screen w-full bg-[#f8f9ff] text-[#121c2a] ${userProfile?.highContrast ? 'contrast-125' : ''}`}>
+      {/* Navigation Header */}
       {activeTab !== 'meetings' && (
         <Navigation
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           userProfile={userProfile}
-          onStartMeeting={() => setActiveTab('meetings')}
+          onStartMeeting={handleStartMeeting}
           onOpenExtension={() => setShowExtensionOverlay(true)}
         />
       )}
@@ -71,7 +181,7 @@ export default function App() {
       <main className="w-full">
         {activeTab === 'home' && (
           <LandingPage
-            onStartMeeting={() => setActiveTab('meetings')}
+            onStartMeeting={handleStartMeeting}
             onOpenExtension={() => setShowExtensionOverlay(true)}
             onOpenDictionary={() => setActiveTab('custom-signs')}
           />
@@ -80,14 +190,15 @@ export default function App() {
         {activeTab === 'meetings' && (
           <MeetingRoom
             userProfile={userProfile}
-            onEndMeeting={() => setActiveTab('dashboard')}
+            meetingUrl={activeMeetingUrl}
+            onEndMeeting={handleEndMeeting}
             onOpenSummaryModal={handleOpenSummary}
           />
         )}
 
         {activeTab === 'custom-signs' && (
           <CustomSignsPage
-            onStartMeeting={() => setActiveTab('meetings')}
+            onStartMeeting={handleStartMeeting}
           />
         )}
 
@@ -95,11 +206,11 @@ export default function App() {
           <Dashboard
             userProfile={userProfile}
             meetings={meetings}
-            onStartMeeting={() => setActiveTab('meetings')}
+            onStartMeeting={handleStartMeeting}
             onOpenExtension={() => setShowExtensionOverlay(true)}
             onOpenDictionary={() => setActiveTab('custom-signs')}
             onSelectMeeting={(m) => {
-              handleOpenSummary(m.transcripts.map((t) => `${t.sender}: ${t.originalText}`).join('\n'));
+              handleOpenSummary(m.transcripts?.map((t: any) => `${t.sender}: ${t.originalText}`).join('\n') || '');
             }}
           />
         )}
@@ -121,6 +232,17 @@ export default function App() {
             setActiveTab('dashboard');
           }}
         />
+      )}
+
+      {/* Floating Extension Button at Bottom */}
+      {!showExtensionOverlay && (
+        <button
+          onClick={() => setShowExtensionOverlay(true)}
+          className="fixed bottom-6 right-6 z-50 bg-[#0040a1] text-white p-4 rounded-full shadow-2xl hover:bg-[#0056d2] transition-transform hover:scale-110 flex items-center justify-center"
+          title="Open Extension Widget"
+        >
+          <span className="material-symbols-outlined text-[28px]">extension</span>
+        </button>
       )}
 
       {/* ASL Sign Dictionary Modal */}

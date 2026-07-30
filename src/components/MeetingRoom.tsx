@@ -8,12 +8,14 @@ import { GeminiSignCopilot, CopilotState, CopilotResult } from '../services/gemi
 
 interface MeetingRoomProps {
   userProfile: UserProfile;
+  meetingUrl?: string;
   onEndMeeting: () => void;
   onOpenSummaryModal: (transcriptText: string) => void;
 }
 
 export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   userProfile,
+  meetingUrl = 'https://signmeet.ai/join/meet-live',
   onEndMeeting,
   onOpenSummaryModal,
 }) => {
@@ -21,6 +23,13 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   const [cameraActive, setCameraActive] = useState(true);
   const [translationMode, setTranslationMode] = useState<TranslationMode>('sign');
   const [rightPanelTab, setRightPanelTab] = useState<'transcript' | 'sign-gifs'>('transcript');
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyMeetingLink = () => {
+    navigator.clipboard.writeText(meetingUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
 
   // Hand Tracking States (Only true when user hand is in frame)
   const [isHandDetected, setIsHandDetected] = useState(false);
@@ -110,7 +119,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           setCopilotState('idle');
         },
       },
-      1500 // 1.5s silence window
+      1000 // 1.0s fast silence window for instant automatic reconstruction
     );
 
     copilotRef.current = copilot;
@@ -375,16 +384,24 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
 
     let y = 46;
     transcripts.forEach((t) => {
-      if (y > 270) {
+      const header = `[${t.timestamp}] ${t.sender} (${t.type}):`;
+      
+      doc.setFont("helvetica", "normal");
+      const lines = doc.splitTextToSize(t.originalText, 170);
+      const entryHeight = 6 + lines.length * 5 + 6;
+
+      if (y + entryHeight > 280) {
         doc.addPage();
         y = 20;
       }
+
       doc.setFont("helvetica", "bold");
-      doc.text(`[${t.timestamp}] ${t.sender} (${t.type}):`, 14, y);
+      doc.text(header, 14, y);
       y += 6;
+
       doc.setFont("helvetica", "normal");
-      doc.text(t.originalText, 20, y, { maxWidth: 170 });
-      y += 10;
+      doc.text(lines, 20, y);
+      y += lines.length * 5 + 6;
     });
 
     doc.save(`SignMeet_Transcript_${Date.now()}.pdf`);
@@ -745,12 +762,28 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
 
       {/* BOTTOM CONTROL DOCK BAR */}
       <footer className="h-20 bg-[#0c1420] border-t border-white/10 px-8 flex items-center justify-between">
-        {/* Left: Meeting Info & Timer */}
+        {/* Left: Meeting Info, URL & Timer */}
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <span className="font-headline-md text-base font-bold text-white">Weekly Sync</span>
+            <span className="font-headline-md text-base font-bold text-white flex items-center gap-2">
+              Weekly Sync
+              <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-white/10 text-[#89f5e7] border border-white/10 font-mono">
+                {meetingUrl.split('/').pop()}
+              </span>
+            </span>
             <span className="text-xs text-[#89f5e7] font-mono">{formatTime(seconds)}</span>
           </div>
+
+          <button
+            onClick={handleCopyMeetingLink}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs text-white/90 hover:text-white transition-colors"
+            title="Copy Shareable Meeting URL"
+          >
+            <span className="material-symbols-outlined text-[16px]">
+              {copiedLink ? 'check_circle' : 'link'}
+            </span>
+            <span>{copiedLink ? 'Copied Link!' : 'Copy Meeting Link'}</span>
+          </button>
         </div>
 
         {/* Center: Primary Call Controls & Mode Toggle */}

@@ -4,7 +4,7 @@ import { MeetingSession, UserProfile } from '../types';
 interface DashboardProps {
   userProfile: UserProfile;
   meetings: MeetingSession[];
-  onStartMeeting: () => void;
+  onStartMeeting: (meetingUrl?: string) => void;
   onOpenExtension: () => void;
   onOpenDictionary: () => void;
   onSelectMeeting: (m: MeetingSession) => void;
@@ -19,6 +19,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onSelectMeeting,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [joinCodeInput, setJoinCodeInput] = useState('');
+
+  const handleJoinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onStartMeeting(joinCodeInput);
+  };
 
   const filteredMeetings = meetings.filter(m =>
     m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -30,8 +36,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="max-w-[1440px] mx-auto space-y-10">
         
         {/* Header Greeting Banner */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-3xl border border-[#c3c6d6]/30 shadow-sm">
-          <div className="space-y-1">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white p-8 rounded-3xl border border-[#c3c6d6]/30 shadow-sm">
+          <div className="space-y-1 max-w-xl">
             <h1 className="font-display text-3xl font-extrabold text-[#121c2a]">
               Good morning, {userProfile.fullName.split(' ')[0]}.
             </h1>
@@ -40,21 +46,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </p>
           </div>
 
-          <div className="flex gap-4">
-            <button
-              onClick={onOpenExtension}
-              className="bg-[#dee9fc] text-[#0040a1] px-5 py-3 rounded-full font-label-sm text-sm hover:bg-[#d4e2fb] transition-colors flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[20px]">extension</span>
-              Extension Widget
-            </button>
-            <button
-              onClick={onStartMeeting}
-              className="bg-[#0040a1] text-white px-6 py-3 rounded-full font-label-sm text-sm hover:bg-[#0056d2] transition-transform active:scale-95 shadow-md flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[20px]">video_call</span>
-              Quick Start Meeting
-            </button>
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+
+
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={onOpenExtension}
+                className="bg-[#dee9fc] text-[#0040a1] px-4 py-3 rounded-full font-label-sm text-xs hover:bg-[#d4e2fb] transition-colors flex items-center justify-center gap-1.5 shrink-0"
+              >
+                <span className="material-symbols-outlined text-[18px]">extension</span>
+                Open Extension Widget
+              </button>
+            </div>
           </div>
         </div>
 

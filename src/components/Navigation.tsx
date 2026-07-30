@@ -5,7 +5,7 @@ interface NavigationProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   userProfile: UserProfile;
-  onStartMeeting: () => void;
+  onStartMeeting: (meetingUrl?: string) => void;
   onOpenExtension: () => void;
 }
 
@@ -89,11 +89,12 @@ export const Navigation: React.FC<NavigationProps> = ({
             title="Launch Floating Chrome Extension Overlay"
           >
             <span className="material-symbols-outlined text-[18px]">extension</span>
-            Chrome Extension
+            Open Extension Widget
           </button>
 
           <button
-            onClick={onStartMeeting}
+            id="navbar-start-meeting"
+            onClick={() => onStartMeeting()}
             className="bg-[#0040a1] text-white px-5 py-2.5 rounded-full font-label-sm text-sm hover:bg-[#0056d2] transition-all flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
           >
             <span className="material-symbols-outlined text-[20px]">add</span>

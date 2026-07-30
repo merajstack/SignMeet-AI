@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface LandingPageProps {
-  onStartMeeting: () => void;
+  onStartMeeting: (meetingUrl?: string) => void;
   onOpenExtension: () => void;
   onOpenDictionary: () => void;
 }
@@ -13,6 +13,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 }) => {
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro' | 'team'>('pro');
+  const [meetingInput, setMeetingInput] = useState('');
+
+  const handleJoinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onStartMeeting(meetingInput);
+  };
 
   return (
     <div className="flex flex-col w-full bg-[#f8f9ff]">
@@ -39,20 +45,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               Experience seamless, real-time sign-to-speech and speech-to-sign translation. Empowering the Deaf and hard-of-hearing community with lightning-fast AI vision.
             </p>
 
-            <div className="flex flex-wrap gap-4 mt-2">
-              <button
-                onClick={onStartMeeting}
-                className="bg-[#0040a1] text-white px-8 py-4 rounded-full font-headline-md text-lg hover:scale-105 transition-transform shadow-xl hover:bg-[#0056d2]"
-              >
-                Try for Free
-              </button>
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
               <button
                 onClick={onOpenExtension}
-                className="bg-[#dee9fc] text-[#121c2a] px-8 py-4 rounded-full font-headline-md text-lg hover:bg-[#d9e3f6] transition-colors flex items-center gap-2"
+                className="bg-[#0040a1] text-white px-7 py-4 rounded-xl sm:rounded-full font-headline-md text-base hover:bg-[#0056d2] transition-all flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl active:scale-95 w-full sm:w-auto"
               >
-                <span className="material-symbols-outlined text-[22px]">extension</span>
-                Chrome Extension Demo
+                <span className="material-symbols-outlined text-[24px]">extension</span>
+                Open Extension Widget
               </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 text-sm text-[#424654]">
+              Start new meetings from the navigation bar above.
             </div>
 
             <div className="flex items-center gap-4 pt-6 border-t border-[#c3c6d6]/30 mt-4">
@@ -454,10 +458,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button
-              onClick={onStartMeeting}
+              onClick={() => document.getElementById('navbar-start-meeting')?.click()}
               className="bg-[#0040a1] text-white px-8 py-4 rounded-full font-headline-md text-lg hover:scale-105 transition-transform shadow-lg"
             >
-              Start Live Meeting Now
+              Start Meeting
             </button>
             <button
               onClick={onOpenExtension}
