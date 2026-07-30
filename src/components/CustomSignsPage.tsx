@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { HandSignGraphic } from './HandSignGraphic';
 
 export interface CustomSignItem {
   id: string;
   title: string;
   defaultVal: string;
   handshape: string;
-  imageUrl: string;
   description: string;
   badge: string;
 }
@@ -15,8 +15,7 @@ export const BASE_CUSTOM_SIGNS: CustomSignItem[] = [
     id: 'open palm',
     title: 'open palm',
     defaultVal: 'I',
-    handshape: '✋ All 5 fingers extended',
-    imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80',
+    handshape: 'Open Palm (5 fingers extended)',
     description: 'Flat open hand with all five fingers extended straight up towards camera.',
     badge: 'Pronoun / Self'
   },
@@ -24,8 +23,7 @@ export const BASE_CUSTOM_SIGNS: CustomSignItem[] = [
     id: 'thumbs up',
     title: 'thumbs up',
     defaultVal: 'Okay',
-    handshape: '👍 Closed fist with thumb up',
-    imageUrl: 'https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?auto=format&fit=crop&w=600&q=80',
+    handshape: 'Thumbs Up (Closed fist with thumb up)',
     description: 'Fist with thumb pointing straight up indicating agreement or Okay.',
     badge: 'Affirmation'
   },
@@ -33,8 +31,7 @@ export const BASE_CUSTOM_SIGNS: CustomSignItem[] = [
     id: 'thumbs down',
     title: 'thumbs down',
     defaultVal: 'No',
-    handshape: '👎 Closed fist with thumb down',
-    imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+    handshape: 'Thumbs Down (Closed fist with thumb down)',
     description: 'Fist with thumb pointing straight down indicating refusal or No.',
     badge: 'Negation'
   },
@@ -42,8 +39,7 @@ export const BASE_CUSTOM_SIGNS: CustomSignItem[] = [
     id: 'index',
     title: 'index',
     defaultVal: 'Question',
-    handshape: '☝️ Single index finger up',
-    imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
+    handshape: 'Single Index Finger Up',
     description: 'Single index finger pointing vertically upward to ask a question.',
     badge: 'Inquiry'
   },
@@ -51,8 +47,7 @@ export const BASE_CUSTOM_SIGNS: CustomSignItem[] = [
     id: 'index middle',
     title: 'index middle',
     defaultVal: 'Wait',
-    handshape: '✌️ Index & middle fingers up',
-    imageUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600&q=80',
+    handshape: 'Index & Middle Fingers Up (V-shape)',
     description: 'Index and middle fingers extended upwards together (V-shape) indicating Wait.',
     badge: 'Command'
   },
@@ -60,8 +55,7 @@ export const BASE_CUSTOM_SIGNS: CustomSignItem[] = [
     id: 'Four fingers (thumb folded)',
     title: 'Four fingers (thumb folded)',
     defaultVal: 'Help',
-    handshape: '🖐️ 4 fingers up (thumb tucked)',
-    imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=600&q=80',
+    handshape: '4 Fingers Up (Thumb Folded Across Palm)',
     description: 'Four fingers extended vertically with thumb folded across palm indicating Help.',
     badge: 'Urgent / Request'
   }
@@ -176,20 +170,21 @@ export const CustomSignsPage: React.FC<CustomSignsPageProps> = ({ onStartMeeting
               className="bg-white rounded-3xl border border-[#c3c6d6]/30 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group"
             >
               {/* Image Banner */}
-              <div className="relative h-48 bg-[#121c2a] overflow-hidden">
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#121c2a] via-transparent to-transparent"></div>
+              <div className="relative h-52 bg-[#93ccff] overflow-hidden flex items-center justify-center p-2">
+                <div className="w-full h-full group-hover:scale-105 transition-transform duration-500 flex items-center justify-center">
+                  <HandSignGraphic signId={item.id} className="w-full h-full max-h-48" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#121c2a]/60 via-transparent to-transparent pointer-events-none"></div>
                 
                 <span className="absolute top-4 left-4 bg-[#121c2a]/80 backdrop-blur-md text-[#89f5e7] border border-[#89f5e7]/30 text-xs font-bold px-3 py-1 rounded-full">
                   {item.badge}
                 </span>
 
                 {/* Handshape Overlay Tag */}
-                <div className="absolute bottom-3 left-4 text-white text-lg font-bold flex items-center gap-2">
+                <div className="absolute bottom-3 left-4 text-[#033b82] bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-extrabold shadow-md flex items-center gap-2 border border-[#93ccff]">
+                  <div className="w-6 h-6 rounded-md overflow-hidden shrink-0 border border-[#93ccff]">
+                    <HandSignGraphic signId={item.id} className="w-full h-full" />
+                  </div>
                   <span>{item.handshape}</span>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { HandSignGraphic } from './HandSignGraphic';
 
 export interface SignVisualItem {
   id: string;
@@ -16,61 +17,61 @@ const SIGN_GIFS_DATABASE: SignVisualItem[] = [
     id: 'sg-1',
     sign: 'open palm',
     category: 'Pronouns',
-    handshape: '✋ Open Palm',
+    handshape: 'Open Palm',
     movement: 'Flat open palm facing forward with all 5 fingers up',
     gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZkNzdtM2w4cTVldnVnMmprYmdsOHFzNmprNWp6cWg0bzlycjAydCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vR85PnGipxAsw8w/giphy.gif',
     fallbackIcon: 'front_hand',
-    description: '✋ open palm → Value: "I"',
+    description: 'open palm → Value: "I"',
   },
   {
     id: 'sg-2',
     sign: 'thumbs up',
     category: 'Affirmation',
-    handshape: '👍 Thumbs Up',
+    handshape: 'Thumbs Up',
     movement: 'Thumb pointing upward',
     gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2R4bHRucThvNHFzeWRrYmdtbXBneDVrMnUxbjlncXU3NWdtazB6OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKTDn9761Z8Yn28/giphy.gif',
     fallbackIcon: 'thumb_up',
-    description: '👍 thumbs up → Value: "Okay"',
+    description: 'thumbs up → Value: "Okay"',
   },
   {
     id: 'sg-3',
     sign: 'thumbs down',
     category: 'Negation',
-    handshape: '👎 Thumbs Down',
+    handshape: 'Thumbs Down',
     movement: 'Thumb pointing downward',
     gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHJzMm0zdzIyaWNidWdqdmpvZ3g2czRhYWkyb3B2ejNmODBhOGlrdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT9IgG5083yTn2WX3q/giphy.gif',
     fallbackIcon: 'thumb_down',
-    description: '👎 thumbs down → Value: "No"',
+    description: 'thumbs down → Value: "No"',
   },
   {
     id: 'sg-4',
     sign: 'index',
     category: 'Inquiry',
-    handshape: '☝️ Index Finger',
+    handshape: 'Index Finger',
     movement: 'Index finger pointing straight up',
     gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdzB2OHptOHY4bTBmMW5zbXN3aHNwdGltdGVsbnExdmkyeXFlcGF1NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPnAiaMCws8nOsE/giphy.gif',
     fallbackIcon: 'help_outline',
-    description: '☝️ index → Value: "Question"',
+    description: 'index → Value: "Question"',
   },
   {
     id: 'sg-5',
     sign: 'index middle',
     category: 'Commands',
-    handshape: '✌️ Index Middle',
+    handshape: 'Index Middle',
     movement: 'Index and middle fingers pointing up (V-shape)',
     gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGpmNTNzbTVldTVzMG9ldWdmdW1sdmJ0OG1ubWxxeWN5NGdlenVsZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT0xezQGU5xCDJuCPe/giphy.gif',
     fallbackIcon: 'hourglass_empty',
-    description: '✌️ index middle → Value: "Wait"',
+    description: 'index middle → Value: "Wait"',
   },
   {
     id: 'sg-6',
     sign: 'Four fingers (thumb folded)',
     category: 'Request',
-    handshape: '🖐️ Four fingers (thumb folded)',
+    handshape: 'Four fingers (thumb folded)',
     movement: '4 fingers extended straight up with thumb folded across palm',
     gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdzB2OHptOHY4bTBmMW5zbXN3aHNwdGltdGVsbnExdmkyeXFlcGF1NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPnAiaMCws8nOsE/giphy.gif',
     fallbackIcon: 'front_hand',
-    description: '🖐️ Four fingers (thumb folded) → Value: "Help"',
+    description: 'Four fingers (thumb folded) → Value: "Help"',
   }
 ];
 
@@ -214,18 +215,8 @@ export const AnimatedSignVisuals: React.FC<AnimatedSignVisualsProps> = ({ onTrig
             }`}
           >
             {/* Thumbnail */}
-            <div className="w-14 h-14 rounded-xl bg-black/60 overflow-hidden shrink-0 border border-white/10 relative flex items-center justify-center">
-              <img
-                src={item.gifUrl}
-                alt={item.sign}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = 'none';
-                }}
-              />
-              <span className="material-symbols-outlined text-[24px] text-[#89f5e7]">
-                {item.fallbackIcon}
-              </span>
+            <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-white/20 relative flex items-center justify-center bg-[#93ccff]">
+              <HandSignGraphic signId={item.sign} className="w-full h-full object-cover" />
             </div>
 
             {/* Info */}

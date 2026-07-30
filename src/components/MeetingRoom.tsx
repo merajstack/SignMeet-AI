@@ -30,6 +30,10 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   const [liveSubtitle, setLiveSubtitle] = useState<string>('Hello everyone, live sign language tracking and speech captions are active.');
   const [isCaptionsStreaming, setIsCaptionsStreaming] = useState(true);
   
+  // Track last logged gesture to auto-append camera sign translations to live transcript
+  const lastLoggedGestureRef = useRef<string>('');
+  const lastLogTimeRef = useRef<number>(0);
+  
   const [transcripts, setTranscripts] = useState<TranscriptEntry[]>([
     {
       id: 't1',
@@ -193,12 +197,37 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     };
   }, [cameraActive]);
 
-  // Update Live Subtitles instantly when a sign gesture is recognized in real time
+  // Update Live Subtitles & append to Live Transcript log instantly when a sign gesture is recognized in real time
   useEffect(() => {
     if (detectedGesture && detectedGesture !== 'UNKNOWN' && detectedGesture !== 'Signing') {
-      setLiveSubtitle(`[Translated Sign]: ${detectedGesture}`);
+      const formattedText = `[Translated Sign]: ${detectedGesture}`;
+      setLiveSubtitle(formattedText);
+
+      const now = Date.now();
+      // Log to live transcripts if it's a new gesture or held for 2.5s
+      if (detectedGesture !== lastLoggedGestureRef.current || now - lastLogTimeRef.current > 2500) {
+        lastLoggedGestureRef.current = detectedGesture;
+        lastLogTimeRef.current = now;
+
+        const newEntry: TranscriptEntry = {
+          id: `t-${now}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          sender: 'Sarah Jenkins (You)',
+          type: 'sign-to-text',
+          originalText: formattedText,
+          confidence: 0.98,
+        };
+
+        setTranscripts(prev => [...prev, newEntry]);
+
+        if (userProfile.autoSpeak) {
+          speechService.speak(detectedGesture);
+        }
+      }
+    } else if (!detectedGesture) {
+      lastLoggedGestureRef.current = '';
     }
-  }, [detectedGesture]);
+  }, [detectedGesture, userProfile.autoSpeak]);
 
   // Canvas Overlay Renderer (Renders ONLY when hand is detected in frame)
   useEffect(() => {
