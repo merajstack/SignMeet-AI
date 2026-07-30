@@ -36,7 +36,7 @@ export interface TranscriptEntry {
   id: string;
   timestamp: string;
   sender: string;
-  type: 'sign-to-text' | 'voice-to-text';
+  type: 'sign-to-text' | 'voice-to-text' | 'chat';
   originalText: string;
   translatedText?: string;
   sourceLanguage?: string;
@@ -44,6 +44,7 @@ export interface TranscriptEntry {
   confidence: number;
   aiReconstructed?: boolean;   // true when sentence was reconstructed by Gemini Copilot
   rawKeywords?: string[];      // original buffered sign keywords before reconstruction
+  isEmoji?: boolean;           // true when message is an emoji or GIF reaction
 }
 
 export interface MeetingSession {

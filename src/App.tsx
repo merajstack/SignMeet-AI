@@ -300,7 +300,7 @@ export default function App() {
       )}
 
       {/* Floating Extension Button at Bottom */}
-      {!showExtensionOverlay && (
+      {!showExtensionOverlay && activeTab !== 'meetings' && (
         <button
           onClick={() => setShowExtensionOverlay(true)}
           className="fixed bottom-6 right-6 z-50 bg-[#0040a1] text-white p-4 rounded-full shadow-2xl hover:bg-[#0056d2] transition-transform hover:scale-110 flex items-center justify-center"

@@ -23,6 +23,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   const [cameraActive, setCameraActive] = useState(true);
   const [translationMode, setTranslationMode] = useState<TranslationMode>('sign');
   const [rightPanelTab, setRightPanelTab] = useState<'transcript' | 'sign-gifs'>('transcript');
+  const [showRightPanel, setShowRightPanel] = useState(true);
   const [copiedLink, setCopiedLink] = useState(false);
 
   const handleCopyMeetingLink = () => {
@@ -31,25 +32,19 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
-  // Hand Tracking States (Only true when user hand is in frame)
+  // Hand Tracking States
   const [isHandDetected, setIsHandDetected] = useState(false);
   const [detectedLandmarks, setDetectedLandmarks] = useState<LandmarkPoint[] | null>(null);
   const [detectedGesture, setDetectedGesture] = useState<string>('');
 
   const [activeSpeaker, setActiveSpeaker] = useState<string>('Sarah Jenkins (You)');
   const [liveSubtitle, setLiveSubtitle] = useState<string>('Hello everyone, live sign language tracking and speech captions are active.');
-  const [isCaptionsStreaming, setIsCaptionsStreaming] = useState(true);
 
   // AI Sign Language Copilot States
   const [copilotState, setCopilotState] = useState<CopilotState>('idle');
   const [copilotKeywords, setCopilotKeywords] = useState<string[]>([]);
-  const [lastReconstructedEntry, setLastReconstructedEntry] = useState<string | null>(null);
   const copilotRef = useRef<GeminiSignCopilot | null>(null);
-  
-  // Track last logged gesture to auto-append camera sign translations to live transcript
-  const lastLoggedGestureRef = useRef<string>('');
-  const lastLogTimeRef = useRef<number>(0);
-  
+
   const [transcripts, setTranscripts] = useState<TranscriptEntry[]>([
     {
       id: 't1',
@@ -68,6 +63,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
       confidence: 0.99,
     },
   ]);
+
   const [inputText, setInputText] = useState('');
   const [seconds, setSeconds] = useState(2712); // 45:12
 
@@ -76,7 +72,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   const transcriptEndRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<any>(null);
 
-  // ─── Initialise Gemini Copilot ───────────────────────────────────────────────
+  // Initialise Gemini Copilot
   useEffect(() => {
     const copilot = new GeminiSignCopilot(
       {
@@ -93,7 +89,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           setCopilotState('ready');
           setCopilotKeywords([]);
           setLiveSubtitle(result.reconstructedText);
-          setLastReconstructedEntry(result.reconstructedText);
 
           const newEntry: TranscriptEntry = {
             id: `t-${Date.now()}`,
@@ -111,7 +106,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
             speechService.speak(result.reconstructedText);
           }
 
-          // Reset state after 4s so the badge fades
           setTimeout(() => setCopilotState('idle'), 4000);
         },
         onError: (msg) => {
@@ -119,7 +113,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           setCopilotState('idle');
         },
       },
-      1000 // 1.0s fast silence window for instant automatic reconstruction
+      1000
     );
 
     copilotRef.current = copilot;
@@ -142,7 +136,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Setup Camera Feed
+  // Camera Feed
   useEffect(() => {
     let stream: MediaStream | null = null;
     if (cameraActive) {
@@ -154,7 +148,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           }
         })
         .catch(err => {
-          console.warn("Camera access unavailable, using simulated video stage:", err);
+          console.warn("Camera access fallback:", err);
         });
     } else {
       if (videoRef.current) {
@@ -169,7 +163,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     };
   }, [cameraActive, micActive]);
 
-  // Real-Time Web Speech API Live Captions
+  // Web Speech API
   useEffect(() => {
     if (micActive && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -212,7 +206,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
         recognition.start();
         recognitionRef.current = recognition;
       } catch (err) {
-        console.warn("Speech recognition initialization fallback:", err);
+        console.warn("Speech recognition fallback:", err);
       }
     } else {
       if (recognitionRef.current) {
@@ -229,7 +223,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     };
   }, [micActive]);
 
-  // Real-Time Computer Vision MediaPipe Hand Tracking Setup
+  // Hand Tracking Setup
   useEffect(() => {
     let trackerInstance: { stop: () => void } | null = null;
 
@@ -264,22 +258,18 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     };
   }, [cameraActive]);
 
-  // Feed detected gesture into Gemini Copilot keyword buffer
+  // Hand gesture feed to copilot
   useEffect(() => {
     if (detectedGesture && detectedGesture !== 'UNKNOWN' && detectedGesture !== 'Signing') {
-      // Update dialect from user profile before pushing
       copilotRef.current?.setDialect(userProfile.dialect || 'ASL');
-      // Provide recent transcript context to Gemini
       copilotRef.current?.setContext(
         transcripts.slice(-4).map(t => `${t.sender}: ${t.originalText}`)
       );
       copilotRef.current?.pushKeyword(detectedGesture);
-    } else if (!detectedGesture) {
-      lastLoggedGestureRef.current = '';
     }
-  }, [detectedGesture, userProfile.autoSpeak]);
+  }, [detectedGesture, userProfile.autoSpeak, userProfile.dialect, transcripts]);
 
-  // Canvas Overlay Renderer (Renders ONLY when hand is detected in frame)
+  // Canvas Overlay Renderer
   useEffect(() => {
     let animationFrameId: number;
     const render = () => {
@@ -287,8 +277,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
         const ctx = canvasRef.current.getContext('2d');
         if (ctx) {
           ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-
-          // ONLY DRAW SKELETON WHEN A HAND IS PHYSICALLY DETECTED IN CAMERA FRAME!
           if (isHandDetected && detectedLandmarks && detectedLandmarks.length > 0) {
             drawHandSkeletonCanvas(
               ctx,
@@ -309,12 +297,11 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     return () => cancelAnimationFrame(animationFrameId);
   }, [isHandDetected, detectedLandmarks, detectedGesture]);
 
-  // Scroll transcript to bottom on new entry
+  // Scroll transcript to bottom
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [transcripts]);
 
-  // Handle Sign Trigger from GIF palette or user action
   const handleTriggerSignGesture = async (signName: string) => {
     setActiveSpeaker('Sarah Jenkins (You)');
     setIsHandDetected(true);
@@ -331,7 +318,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
 
       const data = await response.json();
       const sentence = data.translatedText || `Recognized sign: ${signName}`;
-
       setLiveSubtitle(sentence);
 
       const newEntry: TranscriptEntry = {
@@ -385,7 +371,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     let y = 46;
     transcripts.forEach((t) => {
       const header = `[${t.timestamp}] ${t.sender} (${t.type}):`;
-      
       doc.setFont("helvetica", "normal");
       const lines = doc.splitTextToSize(t.originalText, 170);
       const entryHeight = 6 + lines.length * 5 + 6;
@@ -398,7 +383,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
       doc.setFont("helvetica", "bold");
       doc.text(header, 14, y);
       y += 6;
-
       doc.setFont("helvetica", "normal");
       doc.text(lines, 20, y);
       y += lines.length * 5 + 6;
@@ -423,9 +407,9 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
       {/* Main Grid: Video Stage (Left) & Right Sidebar (Right) */}
       <div className="flex-1 grid lg:grid-cols-12 gap-4 p-4 overflow-hidden">
         
-        {/* VIDEO STAGE (Col 8) */}
-        <div className="lg:col-span-8 relative bg-[#1c2636] rounded-3xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
-          {/* Main Video Feed or Fallback Image */}
+        {/* VIDEO STAGE (Col 8 or Col 12) */}
+        <div className={`${showRightPanel ? 'lg:col-span-8' : 'lg:col-span-12'} relative bg-[#1c2636] rounded-3xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl transition-all duration-300`}>
+          {/* Main Video Feed */}
           {cameraActive ? (
             <video
               ref={videoRef}
@@ -450,47 +434,64 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
             className="absolute inset-0 w-full h-full pointer-events-none transform -scale-x-100"
           />
 
-          {/* Floating OpenCV HUD Status Badge (Top Left) */}
-          <div className="absolute top-6 left-6 flex items-center gap-3 bg-[#121c2a]/90 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-xs font-semibold shadow-xl">
+          {/* HUD Status Badge (Top Left) */}
+          <div className="absolute top-6 left-6 flex items-center gap-3 bg-[#0b0f19]/85 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-xs font-semibold shadow-xl">
             {isHandDetected ? (
               <>
                 <span className="w-2.5 h-2.5 bg-[#00ff66] rounded-full animate-ping"></span>
-                <span className="text-[#00ff66] font-mono font-bold uppercase tracking-wider">HAND DETECTED & TRACKED</span>
-                <span className="text-white/40">|</span>
-                <span className="text-white/80 font-mono">60.1 FPS</span>
+                <span className="text-[#00ff66] font-sans font-bold uppercase tracking-wider">HAND TRACKING ACTIVE</span>
+                <span className="text-white/30">|</span>
+                <span className="text-white/80 font-mono text-[11px]">60 FPS</span>
               </>
             ) : (
               <>
-                <span className="w-2.5 h-2.5 bg-amber-400 rounded-full"></span>
-                <span className="text-amber-300 font-mono font-bold uppercase tracking-wider">CAMERA READY</span>
-                <span className="text-white/40">|</span>
-                <span className="text-white/70">Show hand to enable skeleton</span>
+                <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full"></span>
+                <span className="text-white font-sans font-bold tracking-wide">CAMERA READY</span>
+                <span className="text-white/30">|</span>
+                <span className="text-white/70 text-[11px]">Show hand to start signing</span>
               </>
             )}
-            <span className="text-white/40">|</span>
-            <span className="text-[#89f5e7] font-bold">{userProfile.dialect}</span>
+            <span className="text-white/30">|</span>
+            <span className="text-[#38bdf8] font-bold">{userProfile.dialect}</span>
           </div>
 
-          {/* Hand Detection Toggle Button (Top Right) */}
-          <button
-            onClick={() => setIsHandDetected(!isHandDetected)}
-            className={`absolute top-6 right-6 px-4 py-2 rounded-full backdrop-blur-md border text-xs font-bold transition-all flex items-center gap-2 shadow-xl ${
-              isHandDetected
-                ? 'bg-[#0040a1] text-[#89f5e7] border-[#89f5e7]/50 shadow-[#00ff66]/10'
-                : 'bg-[#121c2a]/80 text-white/90 hover:text-white border-white/20 hover:bg-[#121c2a]'
-            }`}
-            title="Toggle Hand Tracking Skeleton"
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              {isHandDetected ? 'back_hand' : 'front_hand'}
-            </span>
-            <span>{isHandDetected ? 'Hand Active (Skeleton On)' : 'Raise Hand / Sign Mode'}</span>
-          </button>
+          {/* Settings & Side Panel Toggle Button (Top Right) */}
+          <div className="absolute top-6 right-6 flex items-center gap-2">
+            <button
+              onClick={() => setIsHandDetected(!isHandDetected)}
+              className={`px-4 py-2 rounded-full backdrop-blur-md border text-xs font-bold transition-all flex items-center gap-2 shadow-xl cursor-pointer ${
+                isHandDetected
+                  ? 'bg-[#0040a1] text-[#38bdf8] border-[#38bdf8]/50'
+                  : 'bg-[#0b0f19]/80 text-white/90 hover:text-white border-white/20 hover:bg-[#0b0f19]'
+              }`}
+              title="Toggle Hand Tracking Skeleton"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {isHandDetected ? 'back_hand' : 'front_hand'}
+              </span>
+              <span>{isHandDetected ? 'Hand Active' : 'Raise Hand / Sign Mode'}</span>
+            </button>
+
+            {/* Settings Icon Button */}
+            <button
+              onClick={() => setShowRightPanel(!showRightPanel)}
+              className={`p-2.5 rounded-full backdrop-blur-md border text-xs font-bold transition-all flex items-center justify-center shadow-xl cursor-pointer ${
+                showRightPanel
+                  ? 'bg-[#0040a1] text-white border-[#38bdf8]/50'
+                  : 'bg-[#0b0f19]/80 text-white/90 hover:text-white border-white/20'
+              }`}
+              title={showRightPanel ? 'Hide Panel' : 'Show Panel & Settings'}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {showRightPanel ? 'close' : 'settings'}
+              </span>
+            </button>
+          </div>
 
           {/* Name Tag (Bottom Left) */}
-          <div className="absolute bottom-28 left-6 bg-[#121c2a]/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 flex items-center gap-2 shadow-lg">
+          <div className="absolute bottom-28 left-6 bg-[#0b0f19]/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 flex items-center gap-2 shadow-lg">
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span className="font-label-sm text-sm font-bold text-white">Sarah Jenkins (You)</span>
+            <span className="font-sans text-sm font-bold text-white">Sarah Jenkins (You)</span>
           </div>
 
           {/* LIVE CAPTIONS DISPLAY BAR (Bottom Center Stage Overlay) */}
@@ -504,7 +505,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
               : 'bg-[#121c2a]/95 border border-[#89f5e7]/30'
           }`}>
             <div className="flex items-start gap-3.5 min-w-0">
-              {/* Icon: changes based on copilot state */}
               <div className={`w-10 h-10 rounded-2xl text-white font-bold flex items-center justify-center shrink-0 shadow-md transition-all duration-300 ${
                 copilotState === 'ready' ? 'bg-emerald-600' :
                 copilotState === 'processing' ? 'bg-[#0040a1] animate-pulse' :
@@ -539,25 +539,12 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                     </span>
                   )}
                   <div className="flex gap-1 items-center">
-                    <span className={`w-1.5 h-1.5 rounded-full animate-bounce ${
-                      copilotState === 'ready' ? 'bg-emerald-400' :
-                      copilotState === 'buffering' ? 'bg-amber-400' :
-                      'bg-[#00ff66]'
-                    }`}></span>
-                    <span className={`w-1.5 h-1.5 rounded-full animate-bounce ${
-                      copilotState === 'ready' ? 'bg-emerald-400' :
-                      copilotState === 'buffering' ? 'bg-amber-400' :
-                      'bg-[#00ff66]'
-                    }`} style={{ animationDelay: '0.15s' }}></span>
-                    <span className={`w-1.5 h-1.5 rounded-full animate-bounce ${
-                      copilotState === 'ready' ? 'bg-emerald-400' :
-                      copilotState === 'buffering' ? 'bg-amber-400' :
-                      'bg-[#00ff66]'
-                    }`} style={{ animationDelay: '0.3s' }}></span>
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-[#00ff66]"></span>
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-[#00ff66]" style={{ animationDelay: '0.15s' }}></span>
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-[#00ff66]" style={{ animationDelay: '0.3s' }}></span>
                   </div>
                 </div>
 
-                {/* Subtitle: show keyword chips while buffering, else show reconstructed text */}
                 {copilotState === 'buffering' ? (
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {copilotKeywords.map((kw, i) => (
@@ -572,9 +559,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                   </div>
                 ) : (
                   <p
-                    className={`font-caption-bold leading-snug tracking-tight truncate transition-all duration-300 ${
-                      copilotState === 'ready' ? 'text-emerald-100' : 'text-white'
-                    }`}
+                    className="font-caption-bold leading-snug tracking-tight truncate text-white"
                     style={{ fontSize: `${userProfile.captionFontSize || 20}px` }}
                   >
                     "{liveSubtitle}"
@@ -583,18 +568,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
               </div>
             </div>
 
-            {/* Speaking / Audio Synthesizer Controls */}
             <div className="flex items-center gap-2 shrink-0">
-              {copilotState === 'buffering' && (
-                <button
-                  onClick={() => copilotRef.current?.flush()}
-                  className="px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 border border-amber-400/40 text-amber-200 text-xs font-bold transition-colors flex items-center gap-1"
-                  title="Force reconstruct now"
-                >
-                  <span className="material-symbols-outlined text-[16px]">send</span>
-                  Reconstruct
-                </button>
-              )}
               <button
                 onClick={() => speechService.speak(liveSubtitle)}
                 className="w-10 h-10 rounded-xl bg-white/10 hover:bg-[#0040a1] text-white flex items-center justify-center transition-colors shadow-sm"
@@ -607,176 +581,178 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
         </div>
 
         {/* RIGHT SIDEBAR: LIVE TRANSCRIPT & ANIMATED SIGN GIFS TAB (Col 4) */}
-        <div className="lg:col-span-4 bg-[#1a2332] rounded-3xl border border-white/10 flex flex-col overflow-hidden shadow-2xl">
-          {/* Top Tab Bar: Transcript vs Animated Sign GIFs */}
-          <div className="p-3 bg-[#121c2a]/90 border-b border-white/10 flex items-center justify-between gap-2">
-            <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 flex-1">
-              <button
-                onClick={() => setRightPanelTab('transcript')}
-                className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  rightPanelTab === 'transcript' ? 'bg-[#0040a1] text-white shadow-md' : 'text-white/60 hover:text-white'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[16px]">subtitles</span>
-                Live Transcript
-              </button>
-
-              <button
-                onClick={() => setRightPanelTab('sign-gifs')}
-                className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  rightPanelTab === 'sign-gifs' ? 'bg-[#0040a1] text-[#89f5e7] shadow-md' : 'text-white/60 hover:text-white'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[16px]">gif</span>
-                Animated Sign GIFs
-              </button>
-            </div>
-          </div>
-
-          {/* TAB 1: LIVE TRANSCRIPT FEED */}
-          {rightPanelTab === 'transcript' && (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Transcript Action Header */}
-              <div className="px-4 py-2 bg-[#121c2a]/40 border-b border-white/10 flex items-center justify-between">
-                <span className="text-xs font-semibold text-white/60 font-mono">Real-Time Voice & Sign Log</span>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={handleExportPDF}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white transition-colors text-xs flex items-center gap-1"
-                    title="Export PDF"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">picture_as_pdf</span>
-                    PDF
-                  </button>
-                  <button
-                    onClick={handleExportTXT}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white transition-colors text-xs flex items-center gap-1"
-                    title="Export Text File"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">download</span>
-                    TXT
-                  </button>
-                  <button
-                    onClick={() => onOpenSummaryModal(transcripts.map(t => `${t.sender}: ${t.originalText}`).join('\n'))}
-                    className="p-1.5 rounded-lg bg-[#0040a1] hover:bg-[#0056d2] text-white transition-colors text-xs flex items-center gap-1 font-semibold ml-1"
-                    title="Generate AI Meeting Summary"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">auto_awesome</span>
-                    Summary
-                  </button>
-                </div>
-              </div>
-
-              {/* Transcript Log Feed */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-3.5">
-                {transcripts.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className={`p-3.5 rounded-2xl border space-y-1.5 transition-colors ${
-                      entry.aiReconstructed
-                        ? 'bg-emerald-950/40 border-emerald-500/30 hover:bg-emerald-900/30'
-                        : 'bg-white/5 border-white/10 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-xs flex-wrap gap-1">
-                      <span className="font-bold text-white/90">{entry.sender}</span>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {/* AI Copilot badge for Gemini-reconstructed entries */}
-                        {entry.aiReconstructed && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[11px]">auto_awesome</span>
-                            AI Copilot
-                          </span>
-                        )}
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
-                          entry.type === 'sign-to-text' ? 'bg-[#0040a1] text-[#89f5e7]' : 'bg-[#00514a] text-emerald-200'
-                        }`}>
-                          {entry.type === 'sign-to-text' ? 'Sign to Text' : 'Voice to Text'}
-                        </span>
-                        <span className="text-white/40">{entry.timestamp}</span>
-                      </div>
-                    </div>
-
-                    {/* Show raw keyword chips for AI-reconstructed entries */}
-                    {entry.aiReconstructed && entry.rawKeywords && entry.rawKeywords.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {entry.rawKeywords.map((kw, i) => (
-                          <span
-                            key={i}
-                            className="px-1.5 py-0.5 rounded-md bg-white/10 text-white/50 text-[10px] font-mono border border-white/10"
-                          >
-                            {kw}
-                          </span>
-                        ))}
-                        <span className="text-white/30 text-[10px] self-center">→ reconstructed</span>
-                      </div>
-                    )}
-
-                    <p className={`font-body-md text-sm leading-relaxed ${
-                      entry.aiReconstructed ? 'text-emerald-100' : 'text-white/90'
-                    }`}>
-                      {entry.originalText}
-                    </p>
-                    <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[10px] text-white/50">
-                      <span>Confidence: {(entry.confidence * 100).toFixed(1)}%</span>
-                      <button
-                        onClick={() => speechService.speak(entry.originalText)}
-                        className="hover:text-[#89f5e7] transition-colors font-semibold flex items-center gap-1"
-                      >
-                        <span className="material-symbols-outlined text-[14px]">volume_up</span>
-                        Play Audio
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                <div ref={transcriptEndRef} />
-              </div>
-
-              {/* Typing Input Bar */}
-              <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 bg-[#121c2a]/90 flex gap-2">
-                <input
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Type message or sign query..."
-                  className="flex-1 bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-[#89f5e7]"
-                />
+        {showRightPanel && (
+          <div className="lg:col-span-4 bg-[#1a2332] rounded-3xl border border-white/10 flex flex-col overflow-hidden shadow-2xl transition-all duration-300">
+            {/* Top Tab Bar: Transcript vs Animated Sign GIFs */}
+            <div className="p-3 bg-[#121c2a]/90 border-b border-white/10 flex items-center justify-between gap-2">
+              <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 flex-1">
                 <button
-                  type="submit"
-                  className="bg-[#0040a1] hover:bg-[#0056d2] text-white px-4 py-2.5 rounded-xl font-label-sm text-sm transition-colors flex items-center justify-center shrink-0"
+                  onClick={() => setRightPanelTab('transcript')}
+                  className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    rightPanelTab === 'transcript' ? 'bg-[#0040a1] text-white shadow-md' : 'text-white/60 hover:text-white'
+                  }`}
                 >
-                  <span className="material-symbols-outlined text-[20px]">send</span>
+                  <span className="material-symbols-outlined text-[16px]">subtitles</span>
+                  Live Transcript
                 </button>
-              </form>
-            </div>
-          )}
 
-          {/* TAB 2: ANIMATED HAND SIGN GIFS */}
-          {rightPanelTab === 'sign-gifs' && (
-            <div className="flex-1 overflow-hidden">
-              <AnimatedSignVisuals onTriggerSign={handleTriggerSignGesture} />
+                <button
+                  onClick={() => setRightPanelTab('sign-gifs')}
+                  className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    rightPanelTab === 'sign-gifs' ? 'bg-[#0040a1] text-[#89f5e7] shadow-md' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[16px]">gif</span>
+                  Animated Sign GIFs
+                </button>
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* TAB 1: LIVE TRANSCRIPT FEED */}
+            {rightPanelTab === 'transcript' && (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Transcript Action Header */}
+                <div className="px-4 py-2 bg-[#121c2a]/40 border-b border-white/10 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-white/60 font-mono">Real-Time Voice & Sign Log</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={handleExportPDF}
+                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white transition-colors text-xs flex items-center gap-1 cursor-pointer"
+                      title="Export PDF"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">picture_as_pdf</span>
+                      PDF
+                    </button>
+                    <button
+                      onClick={handleExportTXT}
+                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white transition-colors text-xs flex items-center gap-1 cursor-pointer"
+                      title="Export Text File"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">download</span>
+                      TXT
+                    </button>
+                    <button
+                      onClick={() => onOpenSummaryModal(transcripts.map(t => `${t.sender}: ${t.originalText}`).join('\n'))}
+                      className="p-1.5 rounded-lg bg-[#0040a1] hover:bg-[#0056d2] text-white transition-colors text-xs flex items-center gap-1 font-semibold ml-1 cursor-pointer"
+                      title="Generate AI Meeting Summary"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">auto_awesome</span>
+                      Summary
+                    </button>
+                  </div>
+                </div>
+
+                {/* Transcript Log Feed */}
+                <div className="flex-1 p-4 overflow-y-auto space-y-3.5">
+                  {transcripts.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className={`p-3.5 rounded-2xl border space-y-1.5 transition-colors ${
+                        entry.aiReconstructed
+                          ? 'bg-emerald-950/40 border-emerald-500/30 hover:bg-emerald-900/30'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-xs flex-wrap gap-1">
+                        <span className="font-bold text-white/90">{entry.sender}</span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {entry.aiReconstructed && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[11px]">auto_awesome</span>
+                              AI Copilot
+                            </span>
+                          )}
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
+                            entry.type === 'sign-to-text' ? 'bg-[#0040a1] text-[#89f5e7]' : 'bg-[#00514a] text-emerald-200'
+                          }`}>
+                            {entry.type === 'sign-to-text' ? 'Sign to Text' : 'Voice to Text'}
+                          </span>
+                          <span className="text-white/40">{entry.timestamp}</span>
+                        </div>
+                      </div>
+
+                      {entry.aiReconstructed && entry.rawKeywords && entry.rawKeywords.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {entry.rawKeywords.map((kw, i) => (
+                            <span
+                              key={i}
+                              className="px-1.5 py-0.5 rounded-md bg-white/10 text-white/50 text-[10px] font-mono border border-white/10"
+                            >
+                              {kw}
+                            </span>
+                          ))}
+                          <span className="text-white/30 text-[10px] self-center">→ reconstructed</span>
+                        </div>
+                      )}
+
+                      <p className={`font-body-md text-sm leading-relaxed ${
+                        entry.aiReconstructed ? 'text-emerald-100' : 'text-white/90'
+                      }`}>
+                        {entry.originalText}
+                      </p>
+                      <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[10px] text-white/50">
+                        <span>Confidence: {(entry.confidence * 100).toFixed(1)}%</span>
+                        <button
+                          onClick={() => speechService.speak(entry.originalText)}
+                          className="hover:text-[#89f5e7] transition-colors font-semibold flex items-center gap-1 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">volume_up</span>
+                          Play Audio
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={transcriptEndRef} />
+                </div>
+
+                {/* Typing Input Bar */}
+                <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 bg-[#121c2a]/90 flex gap-2">
+                  <input
+                    type="text"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    placeholder="Type message or sign query..."
+                    className="flex-1 bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-[#89f5e7]"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-[#0040a1] hover:bg-[#0056d2] text-white px-4 py-2.5 rounded-xl font-label-sm text-sm transition-colors flex items-center justify-center shrink-0 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">send</span>
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* TAB 2: ANIMATED HAND SIGN GIFS */}
+            {rightPanelTab === 'sign-gifs' && (
+              <div className="flex-1 overflow-hidden">
+                <AnimatedSignVisuals onTriggerSign={handleTriggerSignGesture} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* BOTTOM CONTROL DOCK BAR */}
-      <footer className="h-20 bg-[#0c1420] border-t border-white/10 px-8 flex items-center justify-between">
+      <footer className="h-20 bg-[#0b0f19] border-t border-white/10 px-8 flex items-center justify-between w-full relative z-40">
         {/* Left: Meeting Info, URL & Timer */}
         <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <span className="font-headline-md text-base font-bold text-white flex items-center gap-2">
-              Weekly Sync
-              <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-white/10 text-[#89f5e7] border border-white/10 font-mono">
+          <div className="flex flex-col text-left">
+            <div className="flex items-center gap-2">
+              <span className="font-sans text-base font-bold text-white">
+                Weekly Sync
+              </span>
+              <span className="text-[10px] font-normal px-2.5 py-0.5 rounded-full bg-white/10 text-[#38bdf8] border border-white/10 font-mono">
                 {meetingUrl.split('/').pop()}
               </span>
-            </span>
-            <span className="text-xs text-[#89f5e7] font-mono">{formatTime(seconds)}</span>
+            </div>
+            <span className="text-xs text-[#38bdf8] font-mono mt-0.5">{formatTime(seconds)}</span>
           </div>
 
           <button
             onClick={handleCopyMeetingLink}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs text-white/90 hover:text-white transition-colors"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs text-white/90 hover:text-white transition-colors cursor-pointer"
             title="Copy Shareable Meeting URL"
           >
             <span className="material-symbols-outlined text-[16px]">
@@ -787,16 +763,16 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
         </div>
 
         {/* Center: Primary Call Controls & Mode Toggle */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           {/* Mic Toggle */}
           <button
             onClick={() => setMicActive(!micActive)}
-            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
               micActive ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-red-600 text-white'
             }`}
             title={micActive ? 'Mute Microphone' : 'Unmute Microphone'}
           >
-            <span className="material-symbols-outlined text-[22px]">
+            <span className="material-symbols-outlined text-[20px]">
               {micActive ? 'mic' : 'mic_off'}
             </span>
           </button>
@@ -804,12 +780,12 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           {/* Camera Toggle */}
           <button
             onClick={() => setCameraActive(!cameraActive)}
-            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
               cameraActive ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-red-600 text-white'
             }`}
             title={cameraActive ? 'Turn Off Camera' : 'Turn On Camera'}
           >
-            <span className="material-symbols-outlined text-[22px]">
+            <span className="material-symbols-outlined text-[20px]">
               {cameraActive ? 'videocam' : 'videocam_off'}
             </span>
           </button>
@@ -818,7 +794,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           <div className="bg-white/10 p-1 rounded-full flex items-center border border-white/10">
             <button
               onClick={() => setTranslationMode('sign')}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 translationMode === 'sign' ? 'bg-[#0040a1] text-white shadow-md' : 'text-white/60 hover:text-white'
               }`}
             >
@@ -827,7 +803,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
             </button>
             <button
               onClick={() => setTranslationMode('voice')}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 translationMode === 'voice' ? 'bg-[#00514a] text-white shadow-md' : 'text-white/60 hover:text-white'
               }`}
             >
@@ -839,20 +815,16 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           {/* End Call Button */}
           <button
             onClick={onEndMeeting}
-            className="bg-[#ba1a1a] hover:bg-red-700 text-white px-6 py-3 rounded-full font-label-sm text-sm font-bold transition-transform active:scale-95 shadow-lg flex items-center gap-2"
+            className="bg-[#ba1a1a] hover:bg-red-700 text-white px-5 py-2.5 rounded-full font-sans text-sm font-bold transition-transform active:scale-95 shadow-lg flex items-center gap-2 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">call_end</span>
+            <span className="material-symbols-outlined text-[18px]">call_end</span>
             End Session
           </button>
         </div>
 
-        {/* Right: Accuracy Widget & Participants counter */}
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 text-xs">
-            <span className="text-white/60 font-mono">OpenCV ID:</span>
-            <span className="text-[#00ff66] font-bold font-mono">#CV-9821</span>
-          </div>
-          <div className="flex items-center gap-1 text-white/80 text-xs font-semibold bg-white/10 px-3 py-1.5 rounded-xl">
+        {/* Right: Participants counter */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-white/90 text-xs font-semibold bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/10">
             <span className="material-symbols-outlined text-[18px]">group</span>
             <span>3 Participants</span>
           </div>
@@ -861,4 +833,3 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     </div>
   );
 };
-
