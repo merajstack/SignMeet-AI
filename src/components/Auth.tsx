@@ -10,11 +10,36 @@ const GOOGLE_CLIENT_ID = '101318699736-omfhvo9m3otktncnsnboeom18v301gl5.apps.goo
 
 export const Auth: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [isNightMode, setIsNightMode] = useState<boolean>(() => {
+    return localStorage.getItem('signmeet_theme') === 'dark';
+  });
+
   const [errorMessage, setErrorMessage] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
     return params.get('error_description') || hashParams.get('error_description') || null;
   });
+
+  const toggleNightMode = () => {
+    setIsNightMode((prev) => {
+      const next = !prev;
+      localStorage.setItem('signmeet_theme', next ? 'dark' : 'light');
+      if (next) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (isNightMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isNightMode]);
 
   const saveGoogleSession = (userData: any, token: string) => {
     const session = {
@@ -173,25 +198,25 @@ export const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#f8f9ff] text-[#121c2a] overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#f8f9ff] dark:bg-[#0b0f19] text-[#121c2a] dark:text-[#f8fafc] transition-colors overflow-hidden">
       {/* Left Panel: Hero / Testimonial / Purpose */}
-      <div className="w-full md:w-1/2 min-h-[450px] md:min-h-screen p-8 md:p-16 flex flex-col justify-between bg-gradient-to-br from-[#e9efff] via-[#f4f7ff] to-[#e6eeff] border-b md:border-b-0 md:border-r border-[#c3c6d6]/20 relative">
+      <div className="w-full md:w-1/2 min-h-[450px] md:min-h-screen p-8 md:p-16 flex flex-col justify-between bg-gradient-to-br from-[#e9efff] via-[#f4f7ff] to-[#e6eeff] dark:from-[#090d16] dark:via-[#0f172a] dark:to-[#1e293b] border-b md:border-b-0 md:border-r border-[#c3c6d6]/20 dark:border-[#1e293b] relative">
         {/* Subtle grid pattern background */}
         <div 
-          className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" 
           style={{ backgroundImage: 'radial-gradient(#0040a1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         />
         
         {/* Top Logo */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center p-0.5 shadow-md border border-[#0040a1]/15 overflow-hidden">
+          <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#1e293b] flex items-center justify-center p-0.5 shadow-md border border-[#0040a1]/15 overflow-hidden">
             <img src="/logo.jpg" alt="SignMeet AI Logo" className="w-full h-full object-cover rounded-lg" />
           </div>
           <div className="flex flex-col">
-            <span className="font-headline-md text-2xl font-extrabold text-[#0040a1] tracking-tight">
-              SignMeet <span className="text-[#4648d4]">AI</span>
+            <span className="font-headline-md text-2xl font-extrabold text-[#0040a1] dark:text-[#38bdf8] tracking-tight">
+              SignMeet <span className="text-[#4648d4] dark:text-[#818cf8]">AI</span>
             </span>
-            <span className="text-[10px] uppercase font-bold text-[#00514a] tracking-widest -mt-1">
+            <span className="text-[10px] uppercase font-bold text-[#00514a] dark:text-[#34d399] tracking-widest -mt-1">
               Accessibility First
             </span>
           </div>
@@ -199,19 +224,19 @@ export const Auth: React.FC = () => {
 
         {/* Center Quote / Purpose Statement */}
         <div className="relative z-10 my-auto py-10 max-w-xl">
-          <h2 className="text-3xl md:text-4xl lg:text-[42px] font-extrabold text-[#121c2a] leading-[1.25] tracking-tight mb-8">
+          <h2 className="text-3xl md:text-4xl lg:text-[42px] font-extrabold text-[#121c2a] dark:text-white leading-[1.25] tracking-tight mb-8">
             "SignMeet AI replaced manual interpreters, expensive captioners, and 3 translation tools for us."
           </h2>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-[2px] bg-[#0040a1]" />
-            <p className="text-xs uppercase font-extrabold tracking-widest text-[#595c6b]">
+            <div className="w-10 h-[2px] bg-[#0040a1] dark:bg-[#38bdf8]" />
+            <p className="text-xs uppercase font-extrabold tracking-widest text-[#595c6b] dark:text-[#94a3b8]">
               — HEAD OF ACCESSIBILITY, GLOBAL TECH ENTERPRISE
             </p>
           </div>
         </div>
 
         {/* Bottom Compliance & Badges */}
-        <div className="relative z-10 text-xs font-semibold text-[#737686] flex flex-wrap items-center gap-3 md:gap-6 pt-6 border-t border-[#c3c6d6]/30">
+        <div className="relative z-10 text-xs font-semibold text-[#737686] dark:text-[#64748b] flex flex-wrap items-center gap-3 md:gap-6 pt-6 border-t border-[#c3c6d6]/30 dark:border-[#1e293b]">
           <span>WCAG 2.1 AAA</span>
           <span>•</span>
           <span>GDPR Compliant</span>
@@ -221,15 +246,26 @@ export const Auth: React.FC = () => {
       </div>
 
       {/* Right Panel: Sign In Form */}
-      <div className="w-full md:w-1/2 min-h-[550px] md:min-h-screen p-8 md:p-16 lg:p-24 flex flex-col justify-between bg-white relative">
-        {/* Top Back Link */}
-        <div className="flex justify-start">
+      <div className="w-full md:w-1/2 min-h-[550px] md:min-h-screen p-8 md:p-16 lg:p-24 flex flex-col justify-between bg-white dark:bg-[#0f172a] transition-colors relative">
+        {/* Top Controls: Back Link & Night Mode Toggle */}
+        <div className="flex items-center justify-between w-full">
           <button 
             onClick={() => window.location.href = '/'}
-            className="flex items-center gap-2 text-sm font-semibold text-[#595c6b] hover:text-[#0040a1] transition-colors group cursor-pointer"
+            className="flex items-center gap-2 text-sm font-semibold text-[#595c6b] dark:text-[#94a3b8] hover:text-[#0040a1] dark:hover:text-[#38bdf8] transition-colors group cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
             Back to home
+          </button>
+
+          <button
+            onClick={toggleNightMode}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#c3c6d6]/40 dark:border-[#334155] bg-white/90 dark:bg-[#1e293b] text-[#121c2a] dark:text-[#f8fafc] text-xs font-semibold shadow-sm hover:shadow transition-all cursor-pointer"
+            title={isNightMode ? "Switch to Light Mode" : "Switch to Night Mode"}
+          >
+            <span className="material-symbols-outlined text-[16px] text-amber-500">
+              {isNightMode ? 'light_mode' : 'dark_mode'}
+            </span>
+            <span>{isNightMode ? 'Light' : 'Night Mode'}</span>
           </button>
         </div>
 
@@ -237,21 +273,21 @@ export const Auth: React.FC = () => {
         <div className="w-full max-w-md mx-auto my-auto py-8 flex flex-col items-start text-left">
           {/* Sign In Badge Label */}
           <div className="mb-6">
-            <div className="w-10 h-0.5 bg-[#0040a1] mb-2" />
-            <span className="text-xs uppercase font-extrabold tracking-widest text-[#737686]">SIGN IN</span>
+            <div className="w-10 h-0.5 bg-[#0040a1] dark:bg-[#38bdf8] mb-2" />
+            <span className="text-xs uppercase font-extrabold tracking-widest text-[#737686] dark:text-[#94a3b8]">SIGN IN</span>
           </div>
 
           {/* Heading */}
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#121c2a] tracking-tight mb-3">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-[#121c2a] dark:text-white tracking-tight mb-3">
             Welcome to SignMeet AI
           </h1>
           
-          <p className="text-[#595c6b] text-sm md:text-base leading-relaxed mb-8">
+          <p className="text-[#595c6b] dark:text-[#94a3b8] text-sm md:text-base leading-relaxed mb-8">
             Continue with your Google Workspace to access your team's sign language interpretation dashboard and live meeting overlays.
           </p>
 
           {errorMessage && (
-            <div className="w-full bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-xs font-medium leading-relaxed mb-6">
+            <div className="w-full bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-2xl text-xs font-medium leading-relaxed mb-6">
               {errorMessage}
             </div>
           )}
@@ -260,7 +296,7 @@ export const Auth: React.FC = () => {
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3.5 bg-[#0040a1] hover:bg-[#0056d2] text-white py-4 px-6 rounded-xl font-bold text-base shadow-lg shadow-[#0040a1]/25 hover:shadow-xl hover:shadow-[#0040a1]/35 transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer group mb-8"
+            className="w-full flex items-center justify-center gap-3.5 bg-[#0040a1] hover:bg-[#0056d2] dark:bg-[#0284c7] dark:hover:bg-[#0369a1] text-white py-4 px-6 rounded-xl font-bold text-base shadow-lg shadow-[#0040a1]/25 dark:shadow-[#0284c7]/25 hover:shadow-xl transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer group mb-8"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -278,13 +314,13 @@ export const Auth: React.FC = () => {
           </button>
 
           {/* Disclaimer */}
-          <p className="text-xs text-[#737686] leading-relaxed text-left">
-            By continuing, you agree to SignMeet AI's <a href="#" className="underline hover:text-[#0040a1]">Terms of Service</a> and <a href="#" className="underline hover:text-[#0040a1]">Privacy Policy</a>. New workspace? Your first sign-in creates it automatically.
+          <p className="text-xs text-[#737686] dark:text-[#64748b] leading-relaxed text-left">
+            By continuing, you agree to SignMeet AI's <a href="#" className="underline hover:text-[#0040a1] dark:hover:text-[#38bdf8]">Terms of Service</a> and <a href="#" className="underline hover:text-[#0040a1] dark:hover:text-[#38bdf8]">Privacy Policy</a>. New workspace? Your first sign-in creates it automatically.
           </p>
         </div>
 
         {/* Footer */}
-        <div className="text-xs text-[#9aa0a6] text-left">
+        <div className="text-xs text-[#9aa0a6] dark:text-[#475569] text-left">
           SignMeet AI · Real-time Sign Language Interpretation & Accessibility Platform
         </div>
       </div>

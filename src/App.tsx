@@ -197,12 +197,37 @@ export default function App() {
     setShowSummaryModal(true);
   };
 
+  const [isNightMode, setIsNightMode] = useState<boolean>(() => {
+    return localStorage.getItem('signmeet_theme') === 'dark';
+  });
+
+  const toggleNightMode = () => {
+    setIsNightMode((prev) => {
+      const next = !prev;
+      localStorage.setItem('signmeet_theme', next ? 'dark' : 'light');
+      if (next) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (isNightMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isNightMode]);
+
   if (!session || !userProfile) {
     return <Auth />;
   }
 
   return (
-    <div className={`min-h-screen w-full bg-[#f8f9ff] text-[#121c2a] ${userProfile?.highContrast ? 'contrast-125' : ''}`}>
+    <div className={`min-h-screen w-full bg-[#f8f9ff] dark:bg-[#0b0f19] text-[#121c2a] dark:text-[#f8fafc] transition-colors ${userProfile?.highContrast ? 'contrast-125' : ''}`}>
       {/* Navigation Header */}
       {activeTab !== 'meetings' && (
         <Navigation
@@ -212,6 +237,8 @@ export default function App() {
           onStartMeeting={handleStartMeeting}
           onOpenExtension={() => setShowExtensionOverlay(true)}
           onSignOut={handleSignOut}
+          isNightMode={isNightMode}
+          onToggleNightMode={toggleNightMode}
         />
       )}
 
