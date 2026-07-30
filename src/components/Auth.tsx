@@ -266,14 +266,11 @@ export const Auth: React.FC = () => {
             </div>
           )}
 
-          {/* Official Google GIS button container */}
-          <div id="gsi-official-button" className="w-full flex justify-center mb-4 min-h-[44px]" />
-
-          {/* Primary Custom Google Sign In Button */}
+          {/* Single Primary Google Sign In Button */}
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3.5 bg-[#0040a1] hover:bg-[#0056d2] text-white py-4 px-6 rounded-xl font-bold text-base shadow-lg shadow-[#0040a1]/25 hover:shadow-xl hover:shadow-[#0040a1]/35 transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer group mb-6"
+            className="w-full flex items-center justify-center gap-3.5 bg-[#0040a1] hover:bg-[#0056d2] text-white py-4 px-6 rounded-xl font-bold text-base shadow-lg shadow-[#0040a1]/25 hover:shadow-xl hover:shadow-[#0040a1]/35 transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer group mb-8"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -289,17 +286,6 @@ export const Auth: React.FC = () => {
             )}
             <span>{loading ? 'Connecting to Google...' : 'Continue with Google'}</span>
           </button>
-
-          {/* Active OAuth Badge */}
-          <div className="w-full bg-[#f4f7ff] border border-[#0040a1]/15 rounded-xl p-3 flex items-center gap-2.5 text-xs text-[#0040a1] mb-6">
-            <span className="material-symbols-outlined text-[18px]">verified</span>
-            <div className="truncate text-left">
-              <span className="font-bold">Google Client OAuth Active</span>
-              <div className="font-mono text-[10px] text-[#595c6b] truncate" title={GOOGLE_CLIENT_ID}>
-                ID: {GOOGLE_CLIENT_ID}
-              </div>
-            </div>
-          </div>
 
           {/* Disclaimer */}
           <p className="text-xs text-[#737686] leading-relaxed text-left">
