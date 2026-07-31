@@ -10,9 +10,6 @@ const GOOGLE_CLIENT_ID = '101318699736-omfhvo9m3otktncnsnboeom18v301gl5.apps.goo
 
 export const Auth: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [isNightMode, setIsNightMode] = useState<boolean>(() => {
-    return localStorage.getItem('signmeet_theme') === 'dark';
-  });
 
   const [errorMessage, setErrorMessage] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
@@ -20,26 +17,9 @@ export const Auth: React.FC = () => {
     return params.get('error_description') || hashParams.get('error_description') || null;
   });
 
-  const toggleNightMode = () => {
-    setIsNightMode((prev) => {
-      const next = !prev;
-      localStorage.setItem('signmeet_theme', next ? 'dark' : 'light');
-      if (next) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      return next;
-    });
-  };
-
   useEffect(() => {
-    if (isNightMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isNightMode]);
+    document.documentElement.classList.add('dark');
+  }, []);
 
   const saveGoogleSession = (userData: any, token: string) => {
     const session = {
@@ -202,11 +182,11 @@ export const Auth: React.FC = () => {
       {/* Left Panel: Hero / Testimonial / Purpose */}
       <div className="w-full md:w-1/2 min-h-[450px] md:min-h-screen p-8 md:p-16 flex flex-col justify-between bg-gradient-to-br from-[#e9efff] via-[#f4f7ff] to-[#e6eeff] dark:from-[#090d16] dark:via-[#0f172a] dark:to-[#1e293b] border-b md:border-b-0 md:border-r border-[#c3c6d6]/20 dark:border-[#1e293b] relative">
         {/* Subtle grid pattern background */}
-        <div 
-          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" 
+        <div
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(#0040a1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         />
-        
+
         {/* Top Logo */}
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#1e293b] flex items-center justify-center p-0.5 shadow-md border border-[#0040a1]/15 overflow-hidden">
@@ -225,7 +205,7 @@ export const Auth: React.FC = () => {
         {/* Center Quote / Purpose Statement */}
         <div className="relative z-10 my-auto py-10 max-w-xl">
           <h2 className="text-3xl md:text-4xl lg:text-[42px] font-extrabold text-[#121c2a] dark:text-white leading-[1.25] tracking-tight mb-8">
-            "SignMeet AI replaced manual interpreters, expensive captioners, and 3 translation tools for us."
+            "Breaking communication barriers with AI, not interpreters."
           </h2>
           <div className="flex items-center gap-3">
             <div className="w-10 h-[2px] bg-[#0040a1] dark:bg-[#38bdf8]" />
@@ -247,25 +227,14 @@ export const Auth: React.FC = () => {
 
       {/* Right Panel: Sign In Form */}
       <div className="w-full md:w-1/2 min-h-[550px] md:min-h-screen p-8 md:p-16 lg:p-24 flex flex-col justify-between bg-white dark:bg-[#0f172a] transition-colors relative">
-        {/* Top Controls: Back Link & Night Mode Toggle */}
+        {/* Top Controls: Back Link */}
         <div className="flex items-center justify-between w-full">
-          <button 
+          <button
             onClick={() => window.location.href = '/'}
-            className="flex items-center gap-2 text-sm font-semibold text-[#595c6b] dark:text-[#94a3b8] hover:text-[#0040a1] dark:hover:text-[#38bdf8] transition-colors group cursor-pointer"
+            className="flex items-center gap-2 text-sm font-semibold text-[#94a3b8] hover:text-[#38bdf8] transition-colors group cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
             Back to home
-          </button>
-
-          <button
-            onClick={toggleNightMode}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#c3c6d6]/40 dark:border-[#334155] bg-white/90 dark:bg-[#1e293b] text-[#121c2a] dark:text-[#f8fafc] text-xs font-semibold shadow-sm hover:shadow transition-all cursor-pointer"
-            title={isNightMode ? "Switch to Light Mode" : "Switch to Night Mode"}
-          >
-            <span className="material-symbols-outlined text-[16px] text-amber-500">
-              {isNightMode ? 'light_mode' : 'dark_mode'}
-            </span>
-            <span>{isNightMode ? 'Light' : 'Night Mode'}</span>
           </button>
         </div>
 
@@ -281,7 +250,7 @@ export const Auth: React.FC = () => {
           <h1 className="text-3xl md:text-4xl font-extrabold text-[#121c2a] dark:text-white tracking-tight mb-3">
             Welcome to SignMeet AI
           </h1>
-          
+
           <p className="text-[#595c6b] dark:text-[#94a3b8] text-sm md:text-base leading-relaxed mb-8">
             Continue with your Google Workspace to access your team's sign language interpretation dashboard and live meeting overlays.
           </p>
@@ -303,10 +272,10 @@ export const Auth: React.FC = () => {
             ) : (
               <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center p-1">
                 <svg width="18" height="18" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
               </div>
             )}

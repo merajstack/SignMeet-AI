@@ -11,7 +11,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onOpenExtension,
   onOpenDictionary,
 }) => {
-  const [showSkeleton, setShowSkeleton] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro' | 'team'>('pro');
   const [meetingInput, setMeetingInput] = useState('');
 
@@ -44,14 +43,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <p className="font-body-lg text-lg text-[#424654] dark:text-[#94a3b8] max-w-xl">
               Experience seamless, real-time sign-to-speech and speech-to-sign translation. Empowering the Deaf and hard-of-hearing community with lightning-fast AI vision.
             </p>
-
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
               <button
-                onClick={onOpenExtension}
-                className="bg-[#0040a1] text-white px-7 py-4 rounded-xl sm:rounded-full font-headline-md text-base hover:bg-[#0056d2] transition-all flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl active:scale-95 w-full sm:w-auto"
+                onClick={() => onStartMeeting()}
+                className="bg-[#0040a1] text-white px-7 py-4 rounded-xl sm:rounded-full font-headline-md text-base hover:bg-[#0056d2] transition-all flex items-center justify-center gap-2.5 shadow-xl hover:shadow-2xl active:scale-95 w-full sm:w-auto cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[24px]">extension</span>
-                Open Extension Widget
+                <span className="material-symbols-outlined text-[24px]">videocam</span>
+                Start Meeting
               </button>
             </div>
 
@@ -71,7 +69,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
 
-          {/* Video Preview Card with Live AI Skeleton */}
+          {/* Video Preview Card */}
           <div className="lg:col-span-6 relative">
             <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl bg-[#27313f]">
               <img
@@ -79,46 +77,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 alt="Sign Language User Demo"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#121c2a]/60 via-transparent to-transparent"></div>
-
-              {/* Hand Landmarks Vector Skeleton Overlay */}
-              {showSkeleton && (
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
-                  <g className="stroke-[#89f5e7] stroke-[3] fill-none">
-                    <path className="animate-pulse" d="M450,550 L470,520 L500,510 L530,520 L550,550" />
-                    <path d="M470,520 L475,480" />
-                    <path d="M500,510 L505,460" />
-                    <path d="M530,520 L535,485" />
-                  </g>
-                  <circle cx="450" cy="550" r="6" className="fill-[#89f5e7] animate-ping" />
-                  <circle cx="470" cy="520" r="5" className="fill-[#89f5e7]" />
-                  <circle cx="500" cy="510" r="5" className="fill-[#89f5e7]" />
-                  <circle cx="530" cy="520" r="5" className="fill-[#89f5e7]" />
-                  <circle cx="550" cy="550" r="5" className="fill-[#89f5e7]" />
-                </svg>
-              )}
-
-              {/* Floating Caption Banner */}
-              <div className="absolute bottom-6 left-6 right-6 p-4 bg-[#f8f9ff]/90 dark:bg-[#0b0f19]/90 backdrop-blur-md rounded-xl shadow-lg border-l-4 border-[#0040a1]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-[#ba1a1a] rounded-full animate-pulse"></div>
-                    <span className="font-caption-bold text-base text-[#121c2a] dark:text-white">
-                      AI Interpreter: "How can I help you today?"
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setShowSkeleton(!showSkeleton)}
-                    className="text-xs bg-[#0040a1] text-white px-3 py-1 rounded-full font-label-sm hover:bg-[#0056d2]"
-                  >
-                    {showSkeleton ? 'Hide Landmark Skeleton' : 'Show AI Skeleton'}
-                  </button>
-                </div>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#121c2a]/40 via-transparent to-transparent"></div>
             </div>
 
             {/* Decorative Floating Icon */}
-            <div className="absolute -top-6 -right-6 p-4 bg-[#4648d4] text-white rounded-2xl shadow-xl hidden lg:block animate-bounce">
+            <div className="absolute -top-6 -right-6 p-4 bg-[#0040a1] text-white rounded-2xl shadow-xl hidden lg:block animate-bounce">
               <span className="material-symbols-outlined text-[32px]">interpreter_mode</span>
             </div>
           </div>

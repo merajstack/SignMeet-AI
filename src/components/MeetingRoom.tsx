@@ -19,18 +19,11 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   onEndMeeting,
   onOpenSummaryModal,
 }) => {
-  const [micActive, setMicActive] = useState(true);
+  const [micActive, setMicActive] = useState(false);
   const [cameraActive, setCameraActive] = useState(true);
   const [translationMode, setTranslationMode] = useState<TranslationMode>('sign');
   const [rightPanelTab, setRightPanelTab] = useState<'transcript' | 'sign-gifs'>('transcript');
   const [showRightPanel, setShowRightPanel] = useState(true);
-  const [copiedLink, setCopiedLink] = useState(false);
-
-  const handleCopyMeetingLink = () => {
-    navigator.clipboard.writeText(meetingUrl);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
-  };
 
   // Hand Tracking States
   const [isHandDetected, setIsHandDetected] = useState(false);
@@ -403,12 +396,12 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#121c2a] text-white pt-20 overflow-hidden select-none">
+    <div className="flex flex-col h-screen w-full bg-[#f8f9ff] text-[#121c2a] pt-20 overflow-hidden select-none">
       {/* Main Grid: Video Stage (Left) & Right Sidebar (Right) */}
       <div className="flex-1 grid lg:grid-cols-12 gap-4 p-4 overflow-hidden">
         
-        {/* VIDEO STAGE (Col 8 or Col 12) */}
-        <div className={`${showRightPanel ? 'lg:col-span-8' : 'lg:col-span-12'} relative bg-[#1c2636] rounded-3xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl transition-all duration-300`}>
+        {/* VIDEO STAGE (Fixed 8-col width, centered when sidebar is closed) */}
+        <div className={`${showRightPanel ? 'lg:col-span-8' : 'lg:col-span-8 lg:col-start-3'} relative bg-[#121c2a] rounded-3xl overflow-hidden flex items-center justify-center border border-[#c3c6d6]/40 shadow-xl transition-all duration-300`}>
           {/* Main Video Feed */}
           {cameraActive ? (
             <video
@@ -435,34 +428,34 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           />
 
           {/* HUD Status Badge (Top Left) */}
-          <div className="absolute top-6 left-6 flex items-center gap-3 bg-[#0b0f19]/85 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-xs font-semibold shadow-xl">
+          <div className="absolute top-6 left-6 flex items-center gap-3 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full border border-[#c3c6d6]/50 text-xs font-semibold shadow-md text-[#121c2a]">
             {isHandDetected ? (
               <>
-                <span className="w-2.5 h-2.5 bg-[#00ff66] rounded-full animate-ping"></span>
-                <span className="text-[#00ff66] font-sans font-bold uppercase tracking-wider">HAND TRACKING ACTIVE</span>
-                <span className="text-white/30">|</span>
-                <span className="text-white/80 font-mono text-[11px]">60 FPS</span>
+                <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
+                <span className="text-[#00514a] font-sans font-bold uppercase tracking-wider">HAND TRACKING ACTIVE</span>
+                <span className="text-gray-300">|</span>
+                <span className="text-[#424654] font-mono text-[11px]">60 FPS</span>
               </>
             ) : (
               <>
-                <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full"></span>
-                <span className="text-white font-sans font-bold tracking-wide">CAMERA READY</span>
-                <span className="text-white/30">|</span>
-                <span className="text-white/70 text-[11px]">Show hand to start signing</span>
+                <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span>
+                <span className="text-[#121c2a] font-sans font-bold tracking-wide">CAMERA READY</span>
+                <span className="text-gray-300">|</span>
+                <span className="text-[#595c6b] text-[11px]">Show hand to start signing</span>
               </>
             )}
-            <span className="text-white/30">|</span>
-            <span className="text-[#38bdf8] font-bold">{userProfile.dialect}</span>
+            <span className="text-gray-300">|</span>
+            <span className="text-[#0040a1] font-bold">{userProfile.dialect}</span>
           </div>
 
           {/* Settings & Side Panel Toggle Button (Top Right) */}
           <div className="absolute top-6 right-6 flex items-center gap-2">
             <button
               onClick={() => setIsHandDetected(!isHandDetected)}
-              className={`px-4 py-2 rounded-full backdrop-blur-md border text-xs font-bold transition-all flex items-center gap-2 shadow-xl cursor-pointer ${
+              className={`px-4 py-2 rounded-full backdrop-blur-md border text-xs font-bold transition-all flex items-center gap-2 shadow-md cursor-pointer ${
                 isHandDetected
-                  ? 'bg-[#0040a1] text-[#38bdf8] border-[#38bdf8]/50'
-                  : 'bg-[#0b0f19]/80 text-white/90 hover:text-white border-white/20 hover:bg-[#0b0f19]'
+                  ? 'bg-[#0040a1] text-white border-[#0040a1]'
+                  : 'bg-white/90 text-[#121c2a] hover:bg-white border-[#c3c6d6]/50'
               }`}
               title="Toggle Hand Tracking Skeleton"
             >
@@ -475,10 +468,10 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
             {/* Settings Icon Button */}
             <button
               onClick={() => setShowRightPanel(!showRightPanel)}
-              className={`p-2.5 rounded-full backdrop-blur-md border text-xs font-bold transition-all flex items-center justify-center shadow-xl cursor-pointer ${
+              className={`p-2.5 rounded-full backdrop-blur-md border text-xs font-bold transition-all flex items-center justify-center shadow-md cursor-pointer ${
                 showRightPanel
-                  ? 'bg-[#0040a1] text-white border-[#38bdf8]/50'
-                  : 'bg-[#0b0f19]/80 text-white/90 hover:text-white border-white/20'
+                  ? 'bg-[#0040a1] text-white border-[#0040a1]'
+                  : 'bg-white/90 text-[#121c2a] hover:bg-white border-[#c3c6d6]/50'
               }`}
               title={showRightPanel ? 'Hide Panel' : 'Show Panel & Settings'}
             >
@@ -489,20 +482,20 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           </div>
 
           {/* Name Tag (Bottom Left) */}
-          <div className="absolute bottom-28 left-6 bg-[#0b0f19]/90 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 flex items-center gap-2 shadow-lg">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span className="font-sans text-sm font-bold text-white">Sarah Jenkins (You)</span>
+          <div className="absolute bottom-28 left-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border border-[#c3c6d6]/50 flex items-center gap-2 shadow-md">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="font-sans text-sm font-bold text-[#121c2a]">Sarah Jenkins (You)</span>
           </div>
 
           {/* LIVE CAPTIONS DISPLAY BAR (Bottom Center Stage Overlay) */}
-          <div className={`absolute bottom-6 left-6 right-6 backdrop-blur-xl p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 transition-all duration-500 ${
+          <div className={`absolute bottom-6 left-6 right-6 backdrop-blur-xl p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 transition-all duration-500 border-l-4 border-[#0040a1] border-y border-r ${
             copilotState === 'ready'
-              ? 'bg-[#0a2a1e]/95 border border-[#00ff66]/40 shadow-[0_0_30px_rgba(0,255,102,0.15)]'
+              ? 'bg-emerald-50/95 border-emerald-500/50 shadow-emerald-500/10'
               : copilotState === 'processing'
-              ? 'bg-[#0d1f38]/95 border border-[#89f5e7]/50 shadow-[0_0_20px_rgba(137,245,231,0.1)]'
+              ? 'bg-[#eff4ff]/95 border-[#0040a1]/50 shadow-[#0040a1]/10'
               : copilotState === 'buffering'
-              ? 'bg-[#121c2a]/95 border border-amber-400/40'
-              : 'bg-[#121c2a]/95 border border-[#89f5e7]/30'
+              ? 'bg-amber-50/95 border-amber-400/50'
+              : 'bg-white/95 border-[#c3c6d6]/40'
           }`}>
             <div className="flex items-start gap-3.5 min-w-0">
               <div className={`w-10 h-10 rounded-2xl text-white font-bold flex items-center justify-center shrink-0 shadow-md transition-all duration-300 ${
@@ -522,26 +515,26 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   {copilotState === 'ready' ? (
-                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider font-mono flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider font-mono flex items-center gap-1">
                       ✦ AI COPILOT RECONSTRUCTED
                     </span>
                   ) : copilotState === 'processing' ? (
-                    <span className="text-[10px] font-bold text-[#89f5e7] uppercase tracking-wider font-mono animate-pulse">
+                    <span className="text-[10px] font-bold text-[#0040a1] uppercase tracking-wider font-mono animate-pulse">
                       ✦ GEMINI RECONSTRUCTING...
                     </span>
                   ) : copilotState === 'buffering' ? (
-                    <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider font-mono">
+                    <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider font-mono">
                       SIGNING — BUFFERING KEYWORDS
                     </span>
                   ) : (
-                    <span className="text-[10px] font-bold text-[#89f5e7] uppercase tracking-wider font-mono">
+                    <span className="text-[10px] font-bold text-[#0040a1] uppercase tracking-wider font-mono">
                       LIVE CAPTIONS STREAM ({activeSpeaker})
                     </span>
                   )}
                   <div className="flex gap-1 items-center">
-                    <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-[#00ff66]"></span>
-                    <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-[#00ff66]" style={{ animationDelay: '0.15s' }}></span>
-                    <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-[#00ff66]" style={{ animationDelay: '0.3s' }}></span>
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-[#0040a1]"></span>
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-[#0040a1]" style={{ animationDelay: '0.15s' }}></span>
+                    <span className="w-1.5 h-1.5 rounded-full animate-bounce bg-[#0040a1]" style={{ animationDelay: '0.3s' }}></span>
                   </div>
                 </div>
 
@@ -550,16 +543,16 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                     {copilotKeywords.map((kw, i) => (
                       <span
                         key={i}
-                        className="px-2 py-0.5 rounded-lg bg-amber-500/20 border border-amber-400/40 text-amber-200 text-xs font-bold font-mono"
+                        className="px-2 py-0.5 rounded-lg bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold font-mono"
                       >
                         {kw}
                       </span>
                     ))}
-                    <span className="text-amber-400/60 text-xs animate-pulse self-center">...</span>
+                    <span className="text-amber-600 text-xs animate-pulse self-center">...</span>
                   </div>
                 ) : (
                   <p
-                    className="font-caption-bold leading-snug tracking-tight truncate text-white"
+                    className="font-caption-bold leading-snug tracking-tight truncate text-[#121c2a]"
                     style={{ fontSize: `${userProfile.captionFontSize || 20}px` }}
                   >
                     "{liveSubtitle}"
@@ -571,7 +564,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => speechService.speak(liveSubtitle)}
-                className="w-10 h-10 rounded-xl bg-white/10 hover:bg-[#0040a1] text-white flex items-center justify-center transition-colors shadow-sm"
+                className="w-10 h-10 rounded-xl bg-[#eff4ff] hover:bg-[#0040a1] text-[#0040a1] hover:text-white flex items-center justify-center transition-colors shadow-sm cursor-pointer"
                 title="Speak Captions Aloud"
               >
                 <span className="material-symbols-outlined text-[22px]">volume_up</span>
@@ -582,14 +575,14 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
 
         {/* RIGHT SIDEBAR: LIVE TRANSCRIPT & ANIMATED SIGN GIFS TAB (Col 4) */}
         {showRightPanel && (
-          <div className="lg:col-span-4 bg-[#1a2332] rounded-3xl border border-white/10 flex flex-col overflow-hidden shadow-2xl transition-all duration-300">
+          <div className="lg:col-span-4 bg-white rounded-3xl border border-[#c3c6d6]/40 flex flex-col overflow-hidden shadow-xl transition-all duration-300">
             {/* Top Tab Bar: Transcript vs Animated Sign GIFs */}
-            <div className="p-3 bg-[#121c2a]/90 border-b border-white/10 flex items-center justify-between gap-2">
-              <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 flex-1">
+            <div className="p-3 bg-[#f8f9ff] border-b border-[#c3c6d6]/30 flex items-center justify-between gap-2">
+              <div className="flex bg-[#eff4ff] p-1 rounded-2xl border border-[#c3c6d6]/40 flex-1">
                 <button
                   onClick={() => setRightPanelTab('transcript')}
                   className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    rightPanelTab === 'transcript' ? 'bg-[#0040a1] text-white shadow-md' : 'text-white/60 hover:text-white'
+                    rightPanelTab === 'transcript' ? 'bg-[#0040a1] text-white shadow-sm' : 'text-[#595c6b] hover:text-[#121c2a]'
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">subtitles</span>
@@ -599,7 +592,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                 <button
                   onClick={() => setRightPanelTab('sign-gifs')}
                   className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    rightPanelTab === 'sign-gifs' ? 'bg-[#0040a1] text-[#89f5e7] shadow-md' : 'text-white/60 hover:text-white'
+                    rightPanelTab === 'sign-gifs' ? 'bg-[#0040a1] text-white shadow-sm' : 'text-[#595c6b] hover:text-[#121c2a]'
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">gif</span>
@@ -612,12 +605,12 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
             {rightPanelTab === 'transcript' && (
               <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Transcript Action Header */}
-                <div className="px-4 py-2 bg-[#121c2a]/40 border-b border-white/10 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-white/60 font-mono">Real-Time Voice & Sign Log</span>
+                <div className="px-4 py-2 bg-[#f8f9ff] border-b border-[#c3c6d6]/30 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-[#595c6b] font-mono">Real-Time Voice & Sign Log</span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={handleExportPDF}
-                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white transition-colors text-xs flex items-center gap-1 cursor-pointer"
+                      className="p-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#dee9fc] text-[#0040a1] border border-[#c3c6d6]/30 transition-colors text-xs flex items-center gap-1 cursor-pointer font-semibold"
                       title="Export PDF"
                     >
                       <span className="material-symbols-outlined text-[15px]">picture_as_pdf</span>
@@ -625,7 +618,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                     </button>
                     <button
                       onClick={handleExportTXT}
-                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white transition-colors text-xs flex items-center gap-1 cursor-pointer"
+                      className="p-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#dee9fc] text-[#0040a1] border border-[#c3c6d6]/30 transition-colors text-xs flex items-center gap-1 cursor-pointer font-semibold"
                       title="Export Text File"
                     >
                       <span className="material-symbols-outlined text-[15px]">download</span>
@@ -633,7 +626,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                     </button>
                     <button
                       onClick={() => onOpenSummaryModal(transcripts.map(t => `${t.sender}: ${t.originalText}`).join('\n'))}
-                      className="p-1.5 rounded-lg bg-[#0040a1] hover:bg-[#0056d2] text-white transition-colors text-xs flex items-center gap-1 font-semibold ml-1 cursor-pointer"
+                      className="p-1.5 rounded-lg bg-[#0040a1] hover:bg-[#0056d2] text-white transition-colors text-xs flex items-center gap-1 font-semibold ml-1 cursor-pointer shadow-sm"
                       title="Generate AI Meeting Summary"
                     >
                       <span className="material-symbols-outlined text-[15px]">auto_awesome</span>
@@ -649,25 +642,25 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                       key={entry.id}
                       className={`p-3.5 rounded-2xl border space-y-1.5 transition-colors ${
                         entry.aiReconstructed
-                          ? 'bg-emerald-950/40 border-emerald-500/30 hover:bg-emerald-900/30'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10'
+                          ? 'bg-emerald-50/80 border-emerald-200 hover:bg-emerald-100/60'
+                          : 'bg-[#f8f9ff] border-[#c3c6d6]/40 hover:bg-[#eff4ff]'
                       }`}
                     >
                       <div className="flex items-center justify-between text-xs flex-wrap gap-1">
-                        <span className="font-bold text-white/90">{entry.sender}</span>
+                        <span className="font-bold text-[#121c2a]">{entry.sender}</span>
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {entry.aiReconstructed && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
                               <span className="material-symbols-outlined text-[11px]">auto_awesome</span>
                               AI Copilot
                             </span>
                           )}
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
-                            entry.type === 'sign-to-text' ? 'bg-[#0040a1] text-[#89f5e7]' : 'bg-[#00514a] text-emerald-200'
+                            entry.type === 'sign-to-text' ? 'bg-[#eff4ff] text-[#0040a1] border border-[#0040a1]/20' : 'bg-emerald-100 text-emerald-800'
                           }`}>
                             {entry.type === 'sign-to-text' ? 'Sign to Text' : 'Voice to Text'}
                           </span>
-                          <span className="text-white/40">{entry.timestamp}</span>
+                          <span className="text-[#737686]">{entry.timestamp}</span>
                         </div>
                       </div>
 
@@ -676,25 +669,23 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                           {entry.rawKeywords.map((kw, i) => (
                             <span
                               key={i}
-                              className="px-1.5 py-0.5 rounded-md bg-white/10 text-white/50 text-[10px] font-mono border border-white/10"
+                              className="px-1.5 py-0.5 rounded-md bg-white text-[#424654] text-[10px] font-mono border border-[#c3c6d6]/40"
                             >
                               {kw}
                             </span>
                           ))}
-                          <span className="text-white/30 text-[10px] self-center">→ reconstructed</span>
+                          <span className="text-[#737686] text-[10px] self-center">→ reconstructed</span>
                         </div>
                       )}
 
-                      <p className={`font-body-md text-sm leading-relaxed ${
-                        entry.aiReconstructed ? 'text-emerald-100' : 'text-white/90'
-                      }`}>
+                      <p className="font-body-md text-sm leading-relaxed text-[#2d3748]">
                         {entry.originalText}
                       </p>
-                      <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[10px] text-white/50">
+                      <div className="flex items-center justify-between pt-1 border-t border-[#c3c6d6]/20 text-[10px] text-[#737686]">
                         <span>Confidence: {(entry.confidence * 100).toFixed(1)}%</span>
                         <button
                           onClick={() => speechService.speak(entry.originalText)}
-                          className="hover:text-[#89f5e7] transition-colors font-semibold flex items-center gap-1 cursor-pointer"
+                          className="text-[#0040a1] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[14px]">volume_up</span>
                           Play Audio
@@ -706,17 +697,17 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                 </div>
 
                 {/* Typing Input Bar */}
-                <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 bg-[#121c2a]/90 flex gap-2">
+                <form onSubmit={handleSendMessage} className="p-3 border-t border-[#c3c6d6]/40 bg-[#f8f9ff] flex gap-2">
                   <input
                     type="text"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Type message or sign query..."
-                    className="flex-1 bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-[#89f5e7]"
+                    className="flex-1 bg-white border border-[#c3c6d6]/50 rounded-xl px-4 py-2.5 text-sm text-[#121c2a] placeholder-[#737686] focus:outline-none focus:border-[#0040a1]"
                   />
                   <button
                     type="submit"
-                    className="bg-[#0040a1] hover:bg-[#0056d2] text-white px-4 py-2.5 rounded-xl font-label-sm text-sm transition-colors flex items-center justify-center shrink-0 cursor-pointer"
+                    className="bg-[#0040a1] hover:bg-[#0056d2] text-white px-4 py-2.5 rounded-xl font-label-sm text-sm transition-colors flex items-center justify-center shrink-0 cursor-pointer shadow-sm"
                   >
                     <span className="material-symbols-outlined text-[20px]">send</span>
                   </button>
@@ -735,31 +726,9 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
       </div>
 
       {/* BOTTOM CONTROL DOCK BAR */}
-      <footer className="h-20 bg-[#0b0f19] border-t border-white/10 px-8 flex items-center justify-between w-full relative z-40">
-        {/* Left: Meeting Info, URL & Timer */}
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col text-left">
-            <div className="flex items-center gap-2">
-              <span className="font-sans text-base font-bold text-white">
-                Weekly Sync
-              </span>
-              <span className="text-[10px] font-normal px-2.5 py-0.5 rounded-full bg-white/10 text-[#38bdf8] border border-white/10 font-mono">
-                {meetingUrl.split('/').pop()}
-              </span>
-            </div>
-            <span className="text-xs text-[#38bdf8] font-mono mt-0.5">{formatTime(seconds)}</span>
-          </div>
-
-          <button
-            onClick={handleCopyMeetingLink}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs text-white/90 hover:text-white transition-colors cursor-pointer"
-            title="Copy Shareable Meeting URL"
-          >
-            <span className="material-symbols-outlined text-[16px]">
-              {copiedLink ? 'check_circle' : 'link'}
-            </span>
-            <span>{copiedLink ? 'Copied Link!' : 'Copy Meeting Link'}</span>
-          </button>
+      <footer className="h-20 bg-white border-t border-[#c3c6d6]/40 px-8 flex items-center justify-between w-full relative z-40">
+        {/* Left: Spacer */}
+        <div className="flex items-center gap-4 min-w-[120px]">
         </div>
 
         {/* Center: Primary Call Controls & Mode Toggle */}
@@ -768,7 +737,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           <button
             onClick={() => setMicActive(!micActive)}
             className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-              micActive ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-red-600 text-white'
+              micActive ? 'bg-[#eff4ff] text-[#0040a1] hover:bg-[#dee9fc] border border-[#c3c6d6]/40' : 'bg-red-600 text-white'
             }`}
             title={micActive ? 'Mute Microphone' : 'Unmute Microphone'}
           >
@@ -781,7 +750,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           <button
             onClick={() => setCameraActive(!cameraActive)}
             className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-              cameraActive ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-red-600 text-white'
+              cameraActive ? 'bg-[#eff4ff] text-[#0040a1] hover:bg-[#dee9fc] border border-[#c3c6d6]/40' : 'bg-red-600 text-white'
             }`}
             title={cameraActive ? 'Turn Off Camera' : 'Turn On Camera'}
           >
@@ -791,11 +760,11 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           </button>
 
           {/* Signing / Speaking Mode Pill */}
-          <div className="bg-white/10 p-1 rounded-full flex items-center border border-white/10">
+          <div className="bg-[#eff4ff] p-1 rounded-full flex items-center border border-[#c3c6d6]/40">
             <button
               onClick={() => setTranslationMode('sign')}
               className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                translationMode === 'sign' ? 'bg-[#0040a1] text-white shadow-md' : 'text-white/60 hover:text-white'
+                translationMode === 'sign' ? 'bg-[#0040a1] text-white shadow-sm' : 'text-[#424654] hover:text-[#121c2a]'
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">sign_language</span>
@@ -804,7 +773,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
             <button
               onClick={() => setTranslationMode('voice')}
               className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                translationMode === 'voice' ? 'bg-[#00514a] text-white shadow-md' : 'text-white/60 hover:text-white'
+                translationMode === 'voice' ? 'bg-[#00514a] text-white shadow-sm' : 'text-[#424654] hover:text-[#121c2a]'
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">record_voice_over</span>
@@ -815,7 +784,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           {/* End Call Button */}
           <button
             onClick={onEndMeeting}
-            className="bg-[#ba1a1a] hover:bg-red-700 text-white px-5 py-2.5 rounded-full font-sans text-sm font-bold transition-transform active:scale-95 shadow-lg flex items-center gap-2 cursor-pointer"
+            className="bg-[#ba1a1a] hover:bg-red-700 text-white px-5 py-2.5 rounded-full font-sans text-sm font-bold transition-transform active:scale-95 shadow-md flex items-center gap-2 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">call_end</span>
             End Session
@@ -823,8 +792,8 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
         </div>
 
         {/* Right: Participants counter */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-white/90 text-xs font-semibold bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/10">
+        <div className="flex items-center gap-3 min-w-[120px] justify-end">
+          <div className="flex items-center gap-1.5 text-[#0040a1] text-xs font-semibold bg-[#eff4ff] px-3.5 py-1.5 rounded-xl border border-[#c3c6d6]/40">
             <span className="material-symbols-outlined text-[18px]">group</span>
             <span>3 Participants</span>
           </div>
