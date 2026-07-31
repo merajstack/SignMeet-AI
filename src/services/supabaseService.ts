@@ -301,3 +301,22 @@ export async function saveUserProfileDB(
     }
   } catch (e) {}
 }
+
+export async function saveGoogleUserToSupabase(userData: any, userId: string): Promise<void> {
+  try {
+    if (supabase) {
+      const fullName = userData.user_metadata?.full_name || userData.name || userData.given_name || userData.email?.split('@')[0] || 'Google User';
+      const email = userData.email || '';
+      
+      await supabase.from('users').upsert({
+        id: userId,
+        full_name: fullName,
+        display_name: userData.given_name || fullName,
+        email: email,
+        updated_at: new Date().toISOString(),
+      });
+    }
+  } catch (e) {
+    console.warn('[Supabase] Failed to save user to database:', e);
+  }
+}

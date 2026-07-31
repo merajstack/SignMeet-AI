@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+import { saveGoogleUserToSupabase } from '../services/supabaseService';
+
 declare global {
   interface Window {
     google?: any;
@@ -21,10 +23,11 @@ export const Auth: React.FC = () => {
     document.documentElement.classList.add('dark');
   }, []);
 
-  const saveGoogleSession = (userData: any, token: string) => {
+  const saveGoogleSession = async (userData: any, token: string) => {
+    const userId = userData.sub || `google-${Date.now()}`;
     const session = {
       user: {
-        id: userData.sub || `google-${Date.now()}`,
+        id: userId,
         email: userData.email || '',
         user_metadata: {
           full_name: userData.name || userData.given_name || userData.email?.split('@')[0] || 'Google User',
@@ -35,6 +38,10 @@ export const Auth: React.FC = () => {
       access_token: token,
     };
     localStorage.setItem('signmeet_google_session', JSON.stringify(session));
+
+    // Persist user directly to Supabase DB `users` table
+    await saveGoogleUserToSupabase(userData, userId);
+
     window.dispatchEvent(new Event('signmeet_auth_change'));
   };
 

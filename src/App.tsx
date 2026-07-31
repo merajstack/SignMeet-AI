@@ -12,7 +12,7 @@ import { SmartSummaryModal } from './components/SmartSummaryModal';
 import { Auth } from './components/Auth';
 import { supabase } from './lib/supabaseClient';
 
-import { fetchUserMeetings, deleteMeetingSession, saveUserProfileDB } from './services/supabaseService';
+import { fetchUserMeetings, deleteMeetingSession, saveUserProfileDB, saveGoogleUserToSupabase } from './services/supabaseService';
 
 export default function App() {
   const [session, setSession] = useState<any>(null);
@@ -110,12 +110,13 @@ export default function App() {
   useEffect(() => {
     if (!session) return;
     
-    const loadMeetings = async () => {
+    const loadUserDataAndMeetings = async () => {
+      await saveGoogleUserToSupabase(session.user, session.user.id);
       const fetched = await fetchUserMeetings(session.user.id);
       setMeetings(fetched);
     };
     
-    loadMeetings();
+    loadUserDataAndMeetings();
   }, [session, activeTab]);
 
   // Parse URL query parameter or hash on load to handle meeting links automatically
