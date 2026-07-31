@@ -20,7 +20,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   };
 
   return (
-    <div className="flex flex-col w-full bg-[#f8f9ff] dark:bg-[#0b0f19] transition-colors">
+    <div className="flex flex-col w-full bg-[#f8f9ff] transition-colors">
       {/* Hero Section */}
       <section className="relative w-full px-6 md:px-12 py-12 lg:py-24 overflow-hidden">
         <div className="absolute top-0 right-0 -mr-24 -mt-24 w-[600px] h-[600px] bg-[#0040a1]/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -30,17 +30,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="lg:col-span-6 flex flex-col gap-6">
             <div className="flex items-center gap-3">
               <span className="w-12 h-[2px] bg-[#4648d4]"></span>
-              <span className="font-label-sm text-sm uppercase tracking-widest text-[#4648d4] dark:text-[#818cf8] font-semibold">
+              <span className="font-label-sm text-sm uppercase tracking-widest text-[#4648d4] font-semibold">
                 Revolutionizing Accessibility
               </span>
             </div>
 
-            <h1 className="font-display text-4xl lg:text-5xl font-extrabold text-[#121c2a] dark:text-white leading-tight">
+            <h1 className="font-display text-4xl lg:text-5xl font-extrabold text-[#121c2a] leading-tight">
               Bridge the Communication <br />
-              <span className="text-[#0040a1] dark:text-[#38bdf8] italic">Gap with AI</span> Sign Interpretation.
+              <span className="text-[#0040a1] italic">Gap with AI</span> Sign Interpretation.
             </h1>
 
-            <p className="font-body-lg text-lg text-[#424654] dark:text-[#94a3b8] max-w-xl">
+            <p className="font-body-lg text-lg text-[#424654] max-w-xl">
               Experience seamless, real-time sign-to-speech and speech-to-sign translation. Empowering the Deaf and hard-of-hearing community with lightning-fast AI vision.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
@@ -53,17 +53,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 text-sm text-[#424654] dark:text-[#64748b]">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-[#424654]">
               Start new meetings from the navigation bar above.
             </div>
 
-            <div className="flex items-center gap-4 pt-6 border-t border-[#c3c6d6]/30 dark:border-[#1e293b] mt-4">
+            <div className="flex items-center gap-4 pt-6 border-t border-[#c3c6d6]/30 mt-4">
               <div className="flex -space-x-3">
-                <div className="w-10 h-10 rounded-full bg-[#0040a1] text-white font-bold flex items-center justify-center border-2 border-[#f8f9ff] dark:border-[#0b0f19]">G</div>
-                <div className="w-10 h-10 rounded-full bg-[#4648d4] text-white font-bold flex items-center justify-center border-2 border-[#f8f9ff] dark:border-[#0b0f19]">M</div>
-                <div className="w-10 h-10 rounded-full bg-[#00514a] text-white font-bold flex items-center justify-center border-2 border-[#f8f9ff] dark:border-[#0b0f19]">S</div>
+                <div className="w-10 h-10 rounded-full bg-[#0040a1] text-white font-bold flex items-center justify-center border-2 border-[#f8f9ff]">G</div>
+                <div className="w-10 h-10 rounded-full bg-[#4648d4] text-white font-bold flex items-center justify-center border-2 border-[#f8f9ff]">M</div>
+                <div className="w-10 h-10 rounded-full bg-[#00514a] text-white font-bold flex items-center justify-center border-2 border-[#f8f9ff]">S</div>
               </div>
-              <span className="font-label-sm text-sm text-[#424654] dark:text-[#94a3b8]">
+              <span className="font-label-sm text-sm text-[#424654]">
                 Trusted by 5,000+ Deaf & hard-of-hearing professionals worldwide
               </span>
             </div>
@@ -89,8 +89,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Trust Logotypes */}
-      <section className="w-full py-8 bg-[#eff4ff] dark:bg-[#0f172a] border-y border-[#c3c6d6]/20 dark:border-[#1e293b] transition-colors">
-        <div className="max-w-[1440px] mx-auto px-6 md:px-12 flex flex-wrap justify-between items-center opacity-60 font-bold text-xl md:text-2xl text-[#121c2a] dark:text-[#94a3b8] gap-8">
+      <section className="w-full py-8 bg-[#eff4ff] border-y border-[#c3c6d6]/20 transition-colors">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-12 flex flex-wrap justify-between items-center opacity-60 font-bold text-xl md:text-2xl text-[#121c2a] gap-8">
           <span>Gallaudet</span>
           <span>Microsoft</span>
           <span>Stanford</span>
@@ -100,47 +100,47 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* How It Works Section */}
-      <section className="w-full px-6 md:px-12 py-20 bg-[#f8f9ff] dark:bg-[#0b0f19] transition-colors">
+      <section className="w-full px-6 md:px-12 py-20 bg-[#f8f9ff] transition-colors">
         <div className="max-w-[1440px] mx-auto flex flex-col items-center text-center gap-12">
           <div className="flex flex-col gap-2">
-            <h2 className="font-display text-3xl md:text-4xl text-[#121c2a] dark:text-white">
-              Communication in <span className="text-[#4648d4] dark:text-[#818cf8]">Three Steps</span>
+            <h2 className="font-display text-3xl md:text-4xl text-[#121c2a]">
+              Communication in <span className="text-[#4648d4]">Three Steps</span>
             </h2>
-            <p className="font-body-lg text-base text-[#424654] dark:text-[#94a3b8]">
+            <p className="font-body-lg text-base text-[#424654]">
               Simple, fast, and accessible for everyone.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 w-full">
             {/* Step 1 */}
-            <div className="group flex flex-col items-center gap-4 p-6 bg-white dark:bg-[#1e293b] border border-[#c3c6d6]/30 dark:border-[#334155] hover:shadow-xl transition-all rounded-3xl">
-              <div className="w-20 h-20 rounded-2xl bg-[#0040a1]/10 dark:bg-[#0040a1]/20 flex items-center justify-center text-[#0040a1] dark:text-[#38bdf8] group-hover:scale-110 transition-transform">
+            <div className="group flex flex-col items-center gap-4 p-6 bg-white border border-[#c3c6d6]/30 hover:shadow-xl transition-all rounded-3xl">
+              <div className="w-20 h-20 rounded-2xl bg-[#0040a1]/10 flex items-center justify-center text-[#0040a1] group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-[40px]">video_call</span>
               </div>
-              <h3 className="font-headline-lg text-2xl text-[#121c2a] dark:text-white">1. Connect</h3>
-              <p className="font-body-md text-sm text-[#424654] dark:text-[#94a3b8]">
+              <h3 className="font-headline-lg text-2xl text-[#121c2a]">1. Connect</h3>
+              <p className="font-body-md text-sm text-[#424654]">
                 Open the SignMeet web app or browser extension during any video call or in-person meeting.
               </p>
             </div>
 
             {/* Step 2 */}
-            <div className="group flex flex-col items-center gap-4 p-6 bg-white dark:bg-[#1e293b] border border-[#c3c6d6]/30 dark:border-[#334155] hover:shadow-xl transition-all rounded-3xl">
-              <div className="w-20 h-20 rounded-2xl bg-[#4648d4]/10 dark:bg-[#4648d4]/20 flex items-center justify-center text-[#4648d4] dark:text-[#818cf8] group-hover:scale-110 transition-transform">
+            <div className="group flex flex-col items-center gap-4 p-6 bg-white border border-[#c3c6d6]/30 hover:shadow-xl transition-all rounded-3xl">
+              <div className="w-20 h-20 rounded-2xl bg-[#4648d4]/10 flex items-center justify-center text-[#4648d4] group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-[40px]">sign_language</span>
               </div>
-              <h3 className="font-headline-lg text-2xl text-[#121c2a] dark:text-white">2. Sign</h3>
-              <p className="font-body-md text-sm text-[#424654] dark:text-[#94a3b8]">
+              <h3 className="font-headline-lg text-2xl text-[#121c2a]">2. Sign</h3>
+              <p className="font-body-md text-sm text-[#424654]">
                 Sign naturally in front of your camera. Our AI recognizes nuances, speed, and facial expressions.
               </p>
             </div>
 
             {/* Step 3 */}
-            <div className="group flex flex-col items-center gap-4 p-6 bg-white dark:bg-[#1e293b] border border-[#c3c6d6]/30 dark:border-[#334155] hover:shadow-xl transition-all rounded-3xl">
-              <div className="w-20 h-20 rounded-2xl bg-[#00514a]/10 dark:bg-[#00514a]/20 flex items-center justify-center text-[#00514a] dark:text-[#34d399] group-hover:scale-110 transition-transform">
+            <div className="group flex flex-col items-center gap-4 p-6 bg-white border border-[#c3c6d6]/30 hover:shadow-xl transition-all rounded-3xl">
+              <div className="w-20 h-20 rounded-2xl bg-[#00514a]/10 flex items-center justify-center text-[#00514a] group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-[40px]">forum</span>
               </div>
-              <h3 className="font-headline-lg text-2xl text-[#121c2a] dark:text-white">3. Communicate</h3>
-              <p className="font-body-md text-sm text-[#424654] dark:text-[#94a3b8]">
+              <h3 className="font-headline-lg text-2xl text-[#121c2a]">3. Communicate</h3>
+              <p className="font-body-md text-sm text-[#424654]">
                 Your signs are converted to text and voice instantly, while their speech is captioned for you.
               </p>
             </div>
@@ -149,27 +149,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Core Features Bento Grid */}
-      <section className="w-full px-6 md:px-12 py-20 bg-white dark:bg-[#0f172a] transition-colors">
+      <section className="w-full px-6 md:px-12 py-20 bg-white transition-colors">
         <div className="max-w-[1440px] mx-auto">
           <div className="mb-12">
-            <h2 className="font-display text-3xl md:text-4xl text-[#121c2a] dark:text-white mb-2">Powerful Core Features</h2>
-            <div className="h-1.5 w-32 bg-[#0040a1] dark:bg-[#38bdf8] rounded-full"></div>
+            <h2 className="font-display text-3xl md:text-4xl text-[#121c2a] mb-2">Powerful Core Features</h2>
+            <div className="h-1.5 w-32 bg-[#0040a1] rounded-full"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             {/* Feature 1 */}
-            <div className="md:col-span-8 bg-[#f8f9ff] dark:bg-[#1e293b] border border-[#c3c6d6]/30 dark:border-[#334155] rounded-3xl p-8 flex flex-col md:flex-row gap-8 items-center shadow-sm hover:shadow-md transition-shadow">
+            <div className="md:col-span-8 bg-[#f8f9ff] border border-[#c3c6d6]/30 rounded-3xl p-8 flex flex-col md:flex-row gap-8 items-center shadow-sm hover:shadow-md transition-shadow">
               <div className="flex-1 space-y-4">
-                <span className="px-3 py-1 bg-[#0040a1]/10 dark:bg-[#0040a1]/20 text-[#0040a1] dark:text-[#38bdf8] rounded font-label-sm text-xs font-bold uppercase">
+                <span className="px-3 py-1 bg-[#0040a1]/10 text-[#0040a1] rounded font-label-sm text-xs font-bold uppercase">
                   CORE AI
                 </span>
-                <h3 className="font-headline-lg text-2xl text-[#121c2a] dark:text-white">Real-Time Sign-to-Text</h3>
-                <p className="font-body-md text-sm text-[#424654] dark:text-[#94a3b8]">
+                <h3 className="font-headline-lg text-2xl text-[#121c2a]">Real-Time Sign-to-Text</h3>
+                <p className="font-body-md text-sm text-[#424654]">
                   Proprietary computer vision models translate ASL, BSL, and more into written text with 98.4% accuracy.
                 </p>
                 <button
                   onClick={onOpenDictionary}
-                  className="text-[#0040a1] dark:text-[#38bdf8] font-bold text-sm flex items-center gap-1 hover:underline"
+                  className="text-[#0040a1] font-bold text-sm flex items-center gap-1 hover:underline"
                 >
                   Explore 5,000+ ASL Signs Dictionary <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </button>
@@ -206,10 +206,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* Feature 4 */}
-            <div className="md:col-span-8 bg-[#eff4ff] dark:bg-[#1e293b] border border-[#c3c6d6]/30 dark:border-[#334155] rounded-3xl p-8 flex flex-col md:flex-row-reverse gap-8 items-center shadow-sm">
+            <div className="md:col-span-8 bg-[#eff4ff] border border-[#c3c6d6]/30 rounded-3xl p-8 flex flex-col md:flex-row-reverse gap-8 items-center shadow-sm">
               <div className="flex-1 space-y-4">
-                <h3 className="font-headline-lg text-2xl text-[#121c2a] dark:text-white">Chrome Integration</h3>
-                <p className="font-body-md text-sm text-[#424654] dark:text-[#94a3b8]">
+                <h3 className="font-headline-lg text-2xl text-[#121c2a]">Chrome Integration</h3>
+                <p className="font-body-md text-sm text-[#424654]">
                   One-click activation on Zoom, Google Meet, and Microsoft Teams. Floating widget overlay with customizable transparency and position.
                 </p>
                 <button
@@ -219,16 +219,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   Launch Extension Overlay
                 </button>
               </div>
-              <div className="w-full md:w-1/2 p-4 bg-white dark:bg-[#0f172a] rounded-2xl border border-[#c3c6d6]/30 dark:border-[#334155] shadow-inner">
-                <div className="flex items-center gap-2 border-b border-[#c3c6d6]/30 dark:border-[#334155] pb-2 mb-4">
+              <div className="w-full md:w-1/2 p-4 bg-white rounded-2xl border border-[#c3c6d6]/30 shadow-inner">
+                <div className="flex items-center gap-2 border-b border-[#c3c6d6]/30 pb-2 mb-4">
                   <div className="w-3 h-3 rounded-full bg-[#ba1a1a]"></div>
                   <div className="w-3 h-3 rounded-full bg-[#0040a1]/40"></div>
                   <div className="w-3 h-3 rounded-full bg-[#00514a]/40"></div>
-                  <span className="text-xs font-mono text-[#424654] dark:text-[#64748b] ml-2">meet.google.com/abc-defg-hij</span>
+                  <span className="text-xs font-mono text-[#424654] ml-2">meet.google.com/abc-defg-hij</span>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-4 w-3/4 bg-[#dee9fc] dark:bg-[#334155] rounded animate-pulse"></div>
-                  <div className="h-4 w-1/2 bg-[#dee9fc] dark:bg-[#334155] rounded animate-pulse"></div>
+                  <div className="h-4 w-3/4 bg-[#dee9fc] rounded animate-pulse"></div>
+                  <div className="h-4 w-1/2 bg-[#dee9fc] rounded animate-pulse"></div>
                 </div>
               </div>
             </div>
@@ -237,9 +237,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Target Users / Environment Section */}
-      <section className="w-full px-6 md:px-12 py-20 bg-[#f8f9ff] dark:bg-[#0b0f19] transition-colors">
+      <section className="w-full px-6 md:px-12 py-20 bg-[#f8f9ff] transition-colors">
         <div className="max-w-[1440px] mx-auto">
-          <h2 className="font-display text-3xl md:text-4xl text-[#121c2a] dark:text-white text-center mb-16">
+          <h2 className="font-display text-3xl md:text-4xl text-[#121c2a] text-center mb-16">
             Built for Every Environment
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -303,55 +303,55 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Pricing Plans Section */}
-      <section className="w-full px-6 md:px-12 py-20 bg-white dark:bg-[#0f172a] border-t border-[#c3c6d6]/20 dark:border-[#1e293b] transition-colors">
+      <section className="w-full px-6 md:px-12 py-20 bg-white border-t border-[#c3c6d6]/20 transition-colors">
         <div className="max-w-[1440px] mx-auto text-center">
-          <h2 className="font-display text-3xl md:text-4xl text-[#121c2a] dark:text-white mb-3">Simple & Flexible Pricing</h2>
-          <p className="font-body-lg text-base text-[#424654] dark:text-[#94a3b8] max-w-xl mx-auto mb-12">
+          <h2 className="font-display text-3xl md:text-4xl text-[#121c2a] mb-3">Simple & Flexible Pricing</h2>
+          <p className="font-body-lg text-base text-[#424654] max-w-xl mx-auto mb-12">
             Empower your team with instant sign language translation. Upgrade anytime.
           </p>
 
           <div className="grid md:grid-cols-3 gap-8 text-left">
             {/* Free */}
-            <div className="border border-[#c3c6d6]/40 dark:border-[#334155] rounded-3xl p-8 flex flex-col justify-between hover:border-[#0040a1] transition-colors dark:bg-[#1e293b]">
+            <div className="border border-[#c3c6d6]/40 rounded-3xl p-8 flex flex-col justify-between hover:border-[#0040a1] transition-colors bg-white">
               <div>
-                <span className="font-headline-md text-xl text-[#121c2a] dark:text-white">Free Plan</span>
-                <p className="text-xs text-[#424654] dark:text-[#94a3b8] mt-1">For individuals starting out</p>
+                <span className="font-headline-md text-xl text-[#121c2a]">Free Plan</span>
+                <p className="text-xs text-[#424654] mt-1">For individuals starting out</p>
                 <div className="my-6">
-                  <span className="text-4xl font-extrabold text-[#121c2a] dark:text-white">$0</span>
-                  <span className="text-sm text-[#424654] dark:text-[#94a3b8]"> / month</span>
+                  <span className="text-4xl font-extrabold text-[#121c2a]">$0</span>
+                  <span className="text-sm text-[#424654]"> / month</span>
                 </div>
-                <ul className="space-y-3 text-sm text-[#424654] dark:text-[#94a3b8]">
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> 30 mins daily sign-to-text</li>
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> Standard ASL recognition</li>
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> Chrome Extension Overlay</li>
+                <ul className="space-y-3 text-sm text-[#424654]">
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> 30 mins daily sign-to-text</li>
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> Standard ASL recognition</li>
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> Chrome Extension Overlay</li>
                   <li className="flex items-center gap-2 opacity-50"><span className="material-symbols-outlined text-[18px]">cancel</span> Multi-language translation</li>
                 </ul>
               </div>
               <button
                 onClick={onStartMeeting}
-                className="mt-8 w-full py-3 rounded-full border border-[#0040a1] text-[#0040a1] dark:text-[#38bdf8] dark:border-[#38bdf8] font-label-sm hover:bg-[#eff4ff] dark:hover:bg-[#0040a1]/20"
+                className="mt-8 w-full py-3 rounded-full border border-[#0040a1] text-[#0040a1] font-label-sm hover:bg-[#eff4ff]"
               >
                 Get Started
               </button>
             </div>
 
             {/* Pro Plan */}
-            <div className="border-2 border-[#0040a1] dark:border-[#38bdf8] rounded-3xl p-8 flex flex-col justify-between bg-[#eff4ff]/30 dark:bg-[#0040a1]/10 shadow-xl relative">
+            <div className="border-2 border-[#0040a1] rounded-3xl p-8 flex flex-col justify-between bg-[#eff4ff]/30 shadow-xl relative">
               <span className="absolute -top-3 right-8 bg-[#0040a1] text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
                 Most Popular
               </span>
               <div>
-                <span className="font-headline-md text-xl text-[#0040a1] dark:text-[#38bdf8]">Pro Plan</span>
-                <p className="text-xs text-[#424654] dark:text-[#94a3b8] mt-1">For active Deaf & hard-of-hearing professionals</p>
+                <span className="font-headline-md text-xl text-[#0040a1]">Pro Plan</span>
+                <p className="text-xs text-[#424654] mt-1">For active Deaf & hard-of-hearing professionals</p>
                 <div className="my-6">
-                  <span className="text-4xl font-extrabold text-[#0040a1] dark:text-[#38bdf8]">$29</span>
-                  <span className="text-sm text-[#424654] dark:text-[#94a3b8]"> / month</span>
+                  <span className="text-4xl font-extrabold text-[#0040a1]">$29</span>
+                  <span className="text-sm text-[#424654]"> / month</span>
                 </div>
-                <ul className="space-y-3 text-sm text-[#121c2a] dark:text-[#e2e8f0]">
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> Unlimited translations</li>
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> Low-latency RunPod GPU pipeline</li>
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> 40+ sign & 100+ spoken languages</li>
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> Export PDF/TXT Transcripts</li>
+                <ul className="space-y-3 text-sm text-[#121c2a]">
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> Unlimited translations</li>
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> Low-latency RunPod GPU pipeline</li>
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> 40+ sign & 100+ spoken languages</li>
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> Export PDF/TXT Transcripts</li>
                 </ul>
               </div>
               <button
@@ -363,24 +363,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* Team Plan */}
-            <div className="border border-[#c3c6d6]/40 dark:border-[#334155] rounded-3xl p-8 flex flex-col justify-between hover:border-[#0040a1] transition-colors dark:bg-[#1e293b]">
+            <div className="border border-[#c3c6d6]/40 rounded-3xl p-8 flex flex-col justify-between hover:border-[#0040a1] transition-colors bg-white">
               <div>
-                <span className="font-headline-md text-xl text-[#121c2a] dark:text-white">Team / Enterprise</span>
-                <p className="text-xs text-[#424654] dark:text-[#94a3b8] mt-1">For organizations and schools</p>
+                <span className="font-headline-md text-xl text-[#121c2a]">Team / Enterprise</span>
+                <p className="text-xs text-[#424654] mt-1">For organizations and schools</p>
                 <div className="my-6">
-                  <span className="text-4xl font-extrabold text-[#121c2a] dark:text-white">$99</span>
-                  <span className="text-sm text-[#424654] dark:text-[#94a3b8]"> / month</span>
+                  <span className="text-4xl font-extrabold text-[#121c2a]">$99</span>
+                  <span className="text-sm text-[#424654]"> / month</span>
                 </div>
-                <ul className="space-y-3 text-sm text-[#424654] dark:text-[#94a3b8]">
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> Multi-user workspace</li>
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> Custom AI model fine-tuning</li>
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> Admin controls & GPU monitoring</li>
-                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] dark:text-[#34d399] text-[18px]">check_circle</span> Virtual Camera Driver for Zoom/Teams</li>
+                <ul className="space-y-3 text-sm text-[#424654]">
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> Multi-user workspace</li>
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> Custom AI model fine-tuning</li>
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> Admin controls & GPU monitoring</li>
+                  <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[#00514a] text-[18px]">check_circle</span> Virtual Camera Driver for Zoom/Teams</li>
                 </ul>
               </div>
               <button
                 onClick={() => alert("Contact Sales team requested! An enterprise advisor will reach out.")}
-                className="mt-8 w-full py-3 rounded-full border border-[#121c2a] dark:border-[#94a3b8] text-[#121c2a] dark:text-[#94a3b8] font-label-sm hover:bg-[#121c2a] hover:text-white dark:hover:bg-white dark:hover:text-[#0b0f19] transition-colors"
+                className="mt-8 w-full py-3 rounded-full border border-[#121c2a] text-[#121c2a] font-label-sm hover:bg-[#121c2a] hover:text-white transition-colors"
               >
                 Contact Sales
               </button>
@@ -390,7 +390,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Testimonial Section */}
-      <section className="w-full px-6 md:px-12 py-20 bg-[#4648d4] dark:bg-[#1e1b4b] text-white overflow-hidden relative">
+      <section className="w-full px-6 md:px-12 py-20 bg-[#4648d4] text-white overflow-hidden relative">
         <div className="max-w-[1440px] mx-auto flex flex-col items-center text-center gap-8 relative z-10">
           <span className="material-symbols-outlined text-[64px] opacity-40">format_quote</span>
           <blockquote className="font-display text-2xl md:text-3xl max-w-4xl leading-relaxed">
@@ -413,10 +413,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Call to Action */}
-      <section className="w-full px-6 md:px-12 py-20 bg-[#f8f9ff] dark:bg-[#0b0f19] transition-colors">
-        <div className="max-w-[1440px] mx-auto bg-[#e6eeff] dark:bg-[#1e293b] rounded-[48px] p-8 md:p-16 flex flex-col items-center text-center gap-6 relative overflow-hidden">
-          <h2 className="font-display text-3xl md:text-4xl text-[#121c2a] dark:text-white">Ready to break the silence?</h2>
-          <p className="font-body-lg text-lg text-[#424654] dark:text-[#94a3b8] max-w-2xl">
+      <section className="w-full px-6 md:px-12 py-20 bg-[#f8f9ff] transition-colors">
+        <div className="max-w-[1440px] mx-auto bg-[#e6eeff] rounded-[48px] p-8 md:p-16 flex flex-col items-center text-center gap-6 relative overflow-hidden">
+          <h2 className="font-display text-3xl md:text-4xl text-[#121c2a]">Ready to break the silence?</h2>
+          <p className="font-body-lg text-lg text-[#424654] max-w-2xl">
             Join thousands of users who are using SignMeet AI to communicate without limits. Start your meeting now or try the browser extension.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
@@ -428,7 +428,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </button>
             <button
               onClick={onOpenExtension}
-              className="bg-white dark:bg-[#0f172a] text-[#0040a1] dark:text-[#38bdf8] border-2 border-[#0040a1]/20 dark:border-[#334155] px-8 py-4 rounded-full font-headline-md text-lg hover:bg-[#0040a1]/5 dark:hover:bg-[#334155] transition-colors"
+              className="bg-white text-[#0040a1] border-2 border-[#0040a1]/20 px-8 py-4 rounded-full font-headline-md text-lg hover:bg-[#0040a1]/5 transition-colors"
             >
               Open Extension Widget
             </button>
@@ -437,13 +437,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Footer */}
-      <footer className="w-full bg-[#eff4ff] dark:bg-[#0f172a] py-8 border-t border-[#c3c6d6]/30 dark:border-[#1e293b] transition-colors">
-        <div className="max-w-[1440px] mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-[#424654] dark:text-[#64748b] font-label-sm text-sm">
+      <footer className="w-full bg-[#eff4ff] py-8 border-t border-[#c3c6d6]/30 transition-colors">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-[#424654] font-label-sm text-sm">
           <span>© 2026 SignMeet AI. Accessibility First.</span>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-[#0040a1] dark:hover:text-[#38bdf8]">Privacy Policy</a>
-            <a href="#" className="hover:text-[#0040a1] dark:hover:text-[#38bdf8]">Terms of Service</a>
-            <a href="#" className="hover:text-[#0040a1] dark:hover:text-[#38bdf8]">Accessibility Statement (WCAG AAA)</a>
+            <a href="#" className="hover:text-[#0040a1]">Privacy Policy</a>
+            <a href="#" className="hover:text-[#0040a1]">Terms of Service</a>
+            <a href="#" className="hover:text-[#0040a1]">Accessibility Statement (WCAG AAA)</a>
           </div>
         </div>
       </footer>

@@ -118,7 +118,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           {onSignOut && (
             <button
               onClick={onSignOut}
-              className="p-2 rounded-full text-[#737686] dark:text-[#94a3b8] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors flex items-center justify-center"
+              className="p-2 rounded-full text-[#737686] hover:text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center"
               title="Sign Out"
             >
               <span className="material-symbols-outlined text-[22px]">logout</span>
