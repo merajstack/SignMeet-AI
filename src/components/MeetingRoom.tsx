@@ -5,6 +5,7 @@ import { speechService } from '../services/speechService';
 import { drawHandSkeletonCanvas, initializeMediaPipeTracker, HandTrackingResult } from '../services/handTracking';
 import { AnimatedSignVisuals } from './AnimatedSignVisuals';
 import { GeminiSignCopilot, CopilotState, CopilotResult } from '../services/geminiCopilot';
+import { saveMeetingSession } from '../services/supabaseService';
 
 interface MeetingRoomProps {
   userProfile: UserProfile;
@@ -395,6 +396,23 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  const handleFinishMeeting = async () => {
+    const meetingCode = meetingUrl.split('/').pop() || 'meet-live';
+    const newSession: MeetingSession = {
+      id: `m-${Date.now()}`,
+      title: `Sign Language Session (${meetingCode})`,
+      platform: 'SignMeet Live',
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      duration: formatTime(seconds),
+      status: 'Verified',
+      participants: ['Sarah Jenkins (You)', 'James Doe'],
+      transcripts: transcripts,
+    };
+
+    await saveMeetingSession(newSession, userProfile.id);
+    onEndMeeting();
+  };
+
   return (
     <div className="flex flex-col h-screen w-full bg-[#f8f9ff] text-[#121c2a] pt-20 overflow-hidden select-none">
       {/* Main Grid: Video Stage (Left) & Right Sidebar (Right) */}
@@ -783,7 +801,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
 
           {/* End Call Button */}
           <button
-            onClick={onEndMeeting}
+            onClick={handleFinishMeeting}
             className="bg-[#ba1a1a] hover:bg-red-700 text-white px-5 py-2.5 rounded-full font-sans text-sm font-bold transition-transform active:scale-95 shadow-md flex items-center gap-2 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">call_end</span>

@@ -8,6 +8,7 @@ interface DashboardProps {
   onOpenExtension: () => void;
   onOpenDictionary: () => void;
   onSelectMeeting: (m: MeetingSession) => void;
+  onDeleteMeeting?: (id: string) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -17,6 +18,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onOpenExtension,
   onOpenDictionary,
   onSelectMeeting,
+  onDeleteMeeting,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [joinCodeInput, setJoinCodeInput] = useState('');
@@ -197,12 +199,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       </td>
 
                       <td className="py-4 px-4 text-right">
-                        <button
-                          onClick={() => onSelectMeeting(m)}
-                          className="text-[#0040a1] dark:text-[#38bdf8] hover:bg-[#0040a1] hover:text-white px-3 py-1.5 rounded-lg border border-[#0040a1]/30 dark:border-[#38bdf8]/30 text-xs font-semibold transition-all"
-                        >
-                          View Transcript
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => onSelectMeeting(m)}
+                            className="text-[#0040a1] hover:bg-[#0040a1] hover:text-white px-3 py-1.5 rounded-lg border border-[#0040a1]/30 text-xs font-semibold transition-all cursor-pointer"
+                          >
+                            View Transcript
+                          </button>
+
+                          {onDeleteMeeting && (
+                            <button
+                              onClick={() => onDeleteMeeting(m.id)}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                              title="Delete Transcript Record"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

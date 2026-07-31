@@ -87,22 +87,31 @@ export function saveCustomSignValues(values: Record<string, string>) {
   }
 }
 
+import { fetchCustomSigns, saveCustomSigns } from '../services/supabaseService';
+
 interface CustomSignsPageProps {
   onStartMeeting: () => void;
+  userId?: string;
 }
 
-export const CustomSignsPage: React.FC<CustomSignsPageProps> = ({ onStartMeeting }) => {
+export const CustomSignsPage: React.FC<CustomSignsPageProps> = ({ onStartMeeting, userId }) => {
   const [signValues, setSignValues] = useState<Record<string, string>>(() => getCustomSignValues());
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    saveCustomSignValues(signValues);
-  }, [signValues]);
+    const loadFromCloud = async () => {
+      const cloudSigns = await fetchCustomSigns(userId);
+      if (cloudSigns && Object.keys(cloudSigns).length > 0) {
+        setSignValues(prev => ({ ...prev, ...cloudSigns }));
+      }
+    };
+    loadFromCloud();
+  }, [userId]);
 
   const handleValueChange = (id: string, newValue: string) => {
     setSignValues(prev => {
       const updated = { ...prev, [id]: newValue };
-      saveCustomSignValues(updated);
+      saveCustomSigns(updated, userId);
       return updated;
     });
     setSavedNotice(id);
@@ -117,7 +126,7 @@ export const CustomSignsPage: React.FC<CustomSignsPageProps> = ({ onStartMeeting
       defaults[s.id] = s.defaultVal;
     });
     setSignValues(defaults);
-    saveCustomSignValues(defaults);
+    saveCustomSigns(defaults, userId);
   };
 
   return (

@@ -12,6 +12,8 @@ import { SmartSummaryModal } from './components/SmartSummaryModal';
 import { Auth } from './components/Auth';
 import { supabase } from './lib/supabaseClient';
 
+import { fetchUserMeetings, deleteMeetingSession, saveUserProfileDB } from './services/supabaseService';
+
 export default function App() {
   const [session, setSession] = useState<any>(null);
 
@@ -108,21 +110,13 @@ export default function App() {
   useEffect(() => {
     if (!session) return;
     
-    // Fetch meetings from Supabase
-    const fetchMeetings = async () => {
-      const { data, error } = await supabase
-        .from('meetings')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
-        
-      if (data) {
-        setMeetings(data);
-      }
+    const loadMeetings = async () => {
+      const fetched = await fetchUserMeetings(session.user.id);
+      setMeetings(fetched);
     };
     
-    fetchMeetings();
-  }, [session]);
+    loadMeetings();
+  }, [session, activeTab]);
 
   // Parse URL query parameter or hash on load to handle meeting links automatically
   useEffect(() => {
@@ -176,7 +170,7 @@ export default function App() {
     setActiveTab('meetings');
   };
 
-  const handleEndMeeting = () => {
+  const handleEndMeeting = async () => {
     try {
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('meeting');
@@ -185,11 +179,23 @@ export default function App() {
       newUrl.searchParams.delete('url');
       window.history.pushState({}, '', newUrl.pathname);
     } catch (_) {}
+    if (session?.user?.id) {
+      const updatedMeetings = await fetchUserMeetings(session.user.id);
+      setMeetings(updatedMeetings);
+    }
     setActiveTab('dashboard');
   };
 
-  const handleUpdateProfile = (updated: Partial<UserProfile>) => {
+  const handleDeleteMeeting = async (meetingId: string) => {
+    await deleteMeetingSession(meetingId, session?.user?.id);
+    setMeetings(prev => prev.filter(m => m.id !== meetingId));
+  };
+
+  const handleUpdateProfile = async (updated: Partial<UserProfile>) => {
     setUserProfile((prev) => prev ? { ...prev, ...updated } : null);
+    if (session?.user?.id) {
+      await saveUserProfileDB(updated, session.user.id);
+    }
   };
 
   const handleOpenSummary = (text: string) => {
@@ -242,6 +248,7 @@ export default function App() {
         {activeTab === 'custom-signs' && (
           <CustomSignsPage
             onStartMeeting={handleStartMeeting}
+            userId={userProfile.id}
           />
         )}
 
@@ -255,6 +262,7 @@ export default function App() {
             onSelectMeeting={(m) => {
               handleOpenSummary(m.transcripts?.map((t: any) => `${t.sender}: ${t.originalText}`).join('\n') || '');
             }}
+            onDeleteMeeting={handleDeleteMeeting}
           />
         )}
 
