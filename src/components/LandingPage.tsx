@@ -407,7 +407,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
             <div>
               <p className="font-caption-bold text-lg font-bold">Sarah Chen</p>
-              <p className="font-label-sm text-xs opacity-80 uppercase tracking-widest">Senior Design Architect, ArchiTech</p>
+              <p className="font-label-sm text-xs opacity-80 uppercase tracking-widest"></p>
             </div>
           </div>
         </div>
@@ -441,11 +441,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <footer className="w-full bg-[#eff4ff] py-8 border-t border-[#c3c6d6]/30 transition-colors">
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-[#424654] font-label-sm text-sm">
           <span>© 2026 SignMeet AI. Accessibility First.</span>
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-[#0040a1]">Privacy Policy</a>
-            <a href="#" className="hover:text-[#0040a1]">Terms of Service</a>
-            <a href="#" className="hover:text-[#0040a1]">Accessibility Statement (WCAG AAA)</a>
-          </div>
         </div>
       </footer>
     </div>
