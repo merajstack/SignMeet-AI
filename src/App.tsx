@@ -9,6 +9,7 @@ import { SettingsPage } from './components/SettingsPage';
 import { ChromeExtensionOverlay } from './components/ChromeExtensionOverlay';
 import { ASLDictionaryModal } from './components/ASLDictionaryModal';
 import { SmartSummaryModal } from './components/SmartSummaryModal';
+import { WalkthroughTour } from './components/WalkthroughTour';
 import { Auth } from './components/Auth';
 import { supabase } from './lib/supabaseClient';
 
@@ -22,6 +23,7 @@ export default function App() {
   const [showDictionaryModal, setShowDictionaryModal] = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryTranscriptText, setSummaryTranscriptText] = useState('');
+  const [showTour, setShowTour] = useState(false);
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [meetings, setMeetings] = useState<MeetingSession[]>([]);
@@ -209,12 +211,30 @@ export default function App() {
     localStorage.removeItem('signmeet_theme');
   }, []);
 
+  useEffect(() => {
+    if (session && userProfile) {
+      const tourCompleted = localStorage.getItem('signmeet_walkthrough_completed');
+      if (!tourCompleted) {
+        setShowTour(true);
+      }
+    }
+  }, [session, userProfile]);
+
   if (!session || !userProfile) {
     return <Auth />;
   }
 
   return (
     <div className={`min-h-screen w-full bg-[#f8f9ff] text-[#121c2a] transition-colors ${userProfile?.highContrast ? 'contrast-125' : ''}`}>
+      {/* Interactive Walkthrough Tour Overlay */}
+      <WalkthroughTour
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isOpen={showTour}
+        onClose={() => setShowTour(false)}
+        onRestart={() => setShowTour(true)}
+      />
+
       {/* Navigation Header */}
       {activeTab !== 'meetings' && (
         <Navigation
@@ -224,6 +244,7 @@ export default function App() {
           onStartMeeting={handleStartMeeting}
           onOpenExtension={() => setShowExtensionOverlay(true)}
           onSignOut={handleSignOut}
+          onStartTour={() => setShowTour(true)}
         />
       )}
 

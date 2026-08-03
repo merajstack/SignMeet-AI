@@ -45,8 +45,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
               <button
+                id="hero-start-meeting"
                 onClick={() => onStartMeeting()}
-                className="bg-[#0040a1] text-white px-7 py-4 rounded-xl sm:rounded-full font-headline-md text-base hover:bg-[#0056d2] transition-all flex items-center justify-center gap-2.5 shadow-xl hover:shadow-2xl active:scale-95 w-full sm:w-auto cursor-pointer"
+                className="bg-[#0040a1] text-[#ffffff] px-7 py-4 rounded-xl sm:rounded-full font-headline-md text-base hover:bg-[#0056d2] transition-all flex items-center justify-center gap-2.5 shadow-xl hover:shadow-2xl active:scale-95 w-full sm:w-auto cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[24px]">videocam</span>
                 Start Meeting

@@ -8,6 +8,7 @@ interface NavigationProps {
   onStartMeeting: (meetingUrl?: string) => void;
   onOpenExtension: () => void;
   onSignOut?: () => void;
+  onStartTour?: () => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
@@ -17,12 +18,14 @@ export const Navigation: React.FC<NavigationProps> = ({
   onStartMeeting,
   onOpenExtension,
   onSignOut,
+  onStartTour,
 }) => {
   return (
     <header className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-[#c3c6d6]/30 transition-colors">
       <div className="h-20 w-full px-6 md:px-12 flex items-center justify-between">
         {/* Logo */}
         <div 
+          id="nav-logo"
           className="flex items-center gap-3 cursor-pointer group"
           onClick={() => setActiveTab('home')}
         >
@@ -52,6 +55,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             Home
           </button>
           <button
+            id="nav-custom-signs"
             onClick={() => setActiveTab('custom-signs')}
             className={`font-body-md text-base transition-colors ${
               activeTab === 'custom-signs'
@@ -85,6 +89,17 @@ export const Navigation: React.FC<NavigationProps> = ({
 
         {/* Action Buttons & Profile */}
         <div className="flex items-center gap-3">
+          {onStartTour && (
+            <button
+              onClick={onStartTour}
+              className="flex items-center gap-1.5 bg-[#eff4ff] text-[#0040a1] px-3 py-2 rounded-full font-label-sm text-xs hover:bg-[#dee9fc] transition-all border border-[#0040a1]/20 cursor-pointer shadow-xs"
+              title="Start Interactive Guided Tour"
+            >
+              <span className="material-symbols-outlined text-[16px]">explore</span>
+              <span>Tour</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenExtension}
             className="hidden lg:flex items-center gap-2 bg-[#eff4ff] text-[#0040a1] px-4 py-2 rounded-full font-label-sm text-sm hover:bg-[#dee9fc] transition-colors border border-[#c3c6d6]/40 cursor-pointer"
